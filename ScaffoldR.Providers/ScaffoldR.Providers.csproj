@@ -4,12 +4,12 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{422871E8-D337-4553-9496-F686C54E7143}</ProjectGuid>
+    <ProjectGuid>{F0AB0835-0126-4C3B-9CA7-5BBC3E610F7E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ScaffoldR</RootNamespace>
-    <AssemblyName>ScaffoldR</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <RootNamespace>ScaffoldR.Providers</RootNamespace>
+    <AssemblyName>ScaffoldR.Providers</AssemblyName>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -37,19 +37,24 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="YamlDotNet">
+      <HintPath>..\packages\YamlDotNet.3.1.1\lib\net35\YamlDotNet.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IOutput.cs" />
-    <Compile Include="ISource.cs" />
-    <Compile Include="ITemplate.cs" />
-    <Compile Include="IYaml.cs" />
-    <Compile Include="Resource.cs" />
-    <Compile Include="Media.cs" />
-    <Compile Include="MetaData.cs" />
-    <Compile Include="Page.cs" />
+    <Compile Include="FileOutput.cs" />
+    <Compile Include="FileSource.cs" />
+    <Compile Include="Yaml.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Section.cs" />
-    <Compile Include="StaticSiteGenerator.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ScaffoldR\ScaffoldR.csproj">
+      <Project>{422871e8-d337-4553-9496-f686c54e7143}</Project>
+      <Name>ScaffoldR</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

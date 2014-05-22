@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Express 2013 for Web
-VisualStudioVersion = 12.0.30110.0
+# Visual Studio 2013
+VisualStudioVersion = 12.0.30324.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScaffoldR", "ScaffoldR/ScaffoldR.csproj", "{422871E8-D337-4553-9496-F686C54E7143}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScaffoldR", "ScaffoldR\ScaffoldR.csproj", "{422871E8-D337-4553-9496-F686C54E7143}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScaffoldR.Providers", "ScaffoldR.Providers\ScaffoldR.Providers.csproj", "{F0AB0835-0126-4C3B-9CA7-5BBC3E610F7E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{422871E8-D337-4553-9496-F686C54E7143}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{422871E8-D337-4553-9496-F686C54E7143}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{422871E8-D337-4553-9496-F686C54E7143}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F0AB0835-0126-4C3B-9CA7-5BBC3E610F7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F0AB0835-0126-4C3B-9CA7-5BBC3E610F7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F0AB0835-0126-4C3B-9CA7-5BBC3E610F7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F0AB0835-0126-4C3B-9CA7-5BBC3E610F7E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

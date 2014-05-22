@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ScaffoldR
+namespace ScaffoldR.Providers
 {
     public class FileSource : ISource
     {
