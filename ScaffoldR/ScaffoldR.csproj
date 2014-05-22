@@ -39,11 +39,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FileOutput.cs" />
+    <Compile Include="FileSource.cs" />
+    <Compile Include="IOutput.cs" />
+    <Compile Include="ISource.cs" />
+    <Compile Include="ITemplate.cs" />
+    <Compile Include="IYaml.cs" />
+    <Compile Include="Resource.cs" />
     <Compile Include="Media.cs" />
     <Compile Include="MetaData.cs" />
     <Compile Include="Page.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Section.cs" />
+    <Compile Include="StaticSiteGenerator.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -8,9 +8,9 @@ namespace ScaffoldR
 {
     public class Page
     {
-        public string Path { get; set; }
+        public string Slug { get; set; }
         public MetaData MetaData { get; set; }
         public IDictionary<string, Section> Sections { get; set; }
-        public string[] Tags { get; set; }
+        public string Thumbnail { get; set; }
     }
 }

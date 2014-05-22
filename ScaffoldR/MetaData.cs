@@ -12,5 +12,6 @@ namespace ScaffoldR
         public string Description { get; set; }
         public string Keywords { get; set; }
         public DateTime Published { get; set; }
+        public string[] Tags { get; set; }
     }
 }
