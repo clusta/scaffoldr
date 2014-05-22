@@ -32,16 +32,21 @@ namespace ScaffoldR
             { "json", "application/json" }
         };
 
-        public async Task<Page> ParsePage(string path)
+        public Task<Page<MetaData>> ParsePage(string path)
+        {
+            return ParsePage<MetaData>(path);
+        }
+
+        public async Task<Page<TMetaData>> ParsePage<TMetaData>(string path)
         {
             var files = await source.GetFiles(path);           
             
-            return new Page()
+            return new Page<TMetaData>()
             {
                 Slug = Path.GetFileName(path),
                 MetaData = files
                     .Where(f => f.Name.Equals("metadata.yaml", StringComparison.OrdinalIgnoreCase))
-                    .Select(f => ParseMetaData(f.Path).Result) // todo: make async
+                    .Select(f => ParseMetaData<TMetaData>(f.Path).Result) // todo: make async
                     .FirstOrDefault(),
                 Sections = files  
                     .OrderBy(f => GetSortOrder(f.Name))
@@ -64,13 +69,18 @@ namespace ScaffoldR
             };
         }
 
-        public async Task RenderFolder(string path, ITemplate template)
+        public Task RenderFolder(string path, ITemplate template)
+        {
+            return RenderFolder<MetaData>(path, template);
+        }
+
+        public async Task RenderFolder<TMetaData>(string path, ITemplate template)
         {
             var folders = await source.GetFolders(path);
 
             foreach (var folder in folders)
             {
-                var page = await ParsePage(folder.Path);
+                var page = await ParsePage<TMetaData>(folder.Path);
                 
                 using (var outputStream = await output.OpenWriteableStream(page.Slug)) 
                 {
@@ -89,11 +99,11 @@ namespace ScaffoldR
             return source.ReadAsString(path);
         }
 
-        private async Task<MetaData> ParseMetaData(string path)
+        private async Task<TMetaData> ParseMetaData<TMetaData>(string path)
         {
             var fileContent = await GetFileContent(path);
             
-            return await yaml.Deserialize<MetaData>(fileContent);
+            return await yaml.Deserialize<TMetaData>(fileContent);
         }
 
         private string GetFileName(string path)

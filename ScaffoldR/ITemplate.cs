@@ -9,6 +9,6 @@ namespace ScaffoldR
 {
     public interface ITemplate
     {
-        Task RenderPage(Stream outputStream, Page page);
+        Task RenderPage(Stream outputStream, object page);
     }
 }

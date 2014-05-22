@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace ScaffoldR
 {
-    public class Page
+    public class Page<TMetaData>
     {
         public string Slug { get; set; }
-        public MetaData MetaData { get; set; }
+        public TMetaData MetaData { get; set; }
         public IDictionary<string, Section> Sections { get; set; }
         public string Thumbnail { get; set; }
     }
