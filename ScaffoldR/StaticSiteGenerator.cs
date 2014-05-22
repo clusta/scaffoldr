@@ -25,13 +25,6 @@ namespace ScaffoldR
             { "md", "text/x-markdown" }
         };
 
-        private static IDictionary<string, string> dataContentTypes = new Dictionary<string, string>()
-        {
-            { "yaml", "text/x-yaml" },
-            { "csv", "text/csv"},
-            { "json", "application/json" }
-        };
-
         public Task<Page<MetaData>> ParsePage(string path)
         {
             return ParsePage<MetaData>(path);
@@ -62,7 +55,7 @@ namespace ScaffoldR
                             .Select(m => new Media() 
                             {
                                 Uri = GetFileName(m.Name),
-                                ContentType = string.Empty
+                                ContentType = mediaContentTypes[GetExtension(m.Path)]
                             })
                             .ToList()
                     })
@@ -87,11 +80,6 @@ namespace ScaffoldR
                     await template.RenderPage(outputStream, page);
                 }
             }
-        }
-
-        private string GetParentFolderName(string path)
-        {
-            return Path.GetFileName(Path.GetDirectoryName(path));
         }
 
         private Task<string> GetFileContent(string path)
