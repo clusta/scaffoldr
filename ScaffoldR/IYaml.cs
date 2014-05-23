@@ -8,6 +8,6 @@ namespace ScaffoldR
 {
     public interface IYaml
     {
-        Task<T> Deserialize<T>(string data);
+        Task<T> Deserialize<T>(string data); // todo: deserialize direct from stream
     }
 }

@@ -12,5 +12,18 @@ namespace ScaffoldR
         public TMetaData MetaData { get; set; }
         public IDictionary<string, Section> Sections { get; set; }
         public string Thumbnail { get; set; }
+
+        public string AllContent
+        {
+            get
+            {
+                var content = Sections
+                    .Where(s => s.Value != null)
+                    .Select(s => s.Value.Content)
+                    .ToArray();
+                
+                return string.Concat(content);
+            }
+        }
     }
 }
