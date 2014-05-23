@@ -41,6 +41,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IIndexer.cs" />
     <Compile Include="IOutput.cs" />
     <Compile Include="ISource.cs" />
     <Compile Include="ITemplate.cs" />
