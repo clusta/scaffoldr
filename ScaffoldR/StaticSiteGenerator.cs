@@ -77,13 +77,16 @@ namespace ScaffoldR
             return PublishContainer<MetaData>(path, template);
         }
 
-        public async Task PublishContainer<TMetaData>(string containerName, ITemplate template)
+        public async Task PublishContainer<TMetaData>(string containerName, ITemplate template) // todo: consider removing contains concept
         {
             var folders = await source.GetFolders(containerName);
+            var datasources = await GetDatasources(containerName);
 
             foreach (var folder in folders)
             {
                 var page = await ParsePage<TMetaData>(folder.Path);
+
+                page.Datasources = datasources;
 
                 if (indexer != null)
                 {
@@ -95,6 +98,15 @@ namespace ScaffoldR
                     await template.RenderPage(outputStream, page);
                 }
             }
+        }
+
+        public async Task<Dictionary<string, object>> GetDatasources(string containerName)
+        {
+            var files = await source.GetFiles(containerName); 
+
+            return files
+                .Where(f => GetExtension(f.Name) == "csv")
+                .ToDictionary(f => GetFileNameWithoutExtension(f.Name), f => ParseCsv(GetFileNameWithoutExtension(f.Name), f.Path) as object);
         }
 
         private Task<string> GetFileContent(string path)
@@ -116,6 +128,13 @@ namespace ScaffoldR
                 default:
                     return default(TMetaData);
             }
+        }
+
+        private async Task<object[]> ParseCsv(string key, string path)
+        {
+            var fileContent = await GetFileContent(path);
+
+            return await csv.Deserialize(key, fileContent);
         }
 
         private string GetFileName(string path)

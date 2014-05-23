@@ -30,6 +30,20 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="FileHelpers">
+      <HintPath>..\..\..\Visual Studio 2013\Projects\ScaffoldrTesting\packages\FileHelpers.2.0.0.0\lib\FileHelpers.dll</HintPath>
+    </Reference>
+    <Reference Include="FileHelpers.ExcelStorage">
+      <HintPath>..\..\..\Visual Studio 2013\Projects\ScaffoldrTesting\packages\FileHelpers.2.0.0.0\lib\FileHelpers.ExcelStorage.dll</HintPath>
+    </Reference>
+    <Reference Include="Interop.Excel">
+      <HintPath>..\..\..\Visual Studio 2013\Projects\ScaffoldrTesting\packages\FileHelpers.2.0.0.0\lib\Interop.Excel.dll</HintPath>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="Interop.Office">
+      <HintPath>..\..\..\Visual Studio 2013\Projects\ScaffoldrTesting\packages\FileHelpers.2.0.0.0\lib\Interop.Office.dll</HintPath>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
     <Reference Include="mustache-sharp">
       <HintPath>..\..\..\Visual Studio 2013\Projects\ScaffoldrTesting\packages\mustache-sharp.0.2.4.0\lib\net40\mustache-sharp.dll</HintPath>
     </Reference>
@@ -48,6 +62,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Csv.cs" />
     <Compile Include="FileOutput.cs" />
     <Compile Include="FileSource.cs" />
     <Compile Include="Json.cs" />

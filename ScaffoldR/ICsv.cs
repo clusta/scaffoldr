@@ -8,6 +8,6 @@ namespace ScaffoldR
 {
     public interface ICsv
     {
-        Task<IEnumerable<T>> Deserialize<T>(string data);
+        Task<object[]> Deserialize(string key, string data);
     }
 }

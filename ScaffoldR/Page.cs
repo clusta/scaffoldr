@@ -11,6 +11,7 @@ namespace ScaffoldR
         public string Slug { get; set; }
         public TMetaData MetaData { get; set; }
         public IDictionary<string, Section> Sections { get; set; }
+        public IDictionary<string, object> Datasources { get; set; }
         public string Thumbnail { get; set; }
 
         public string AllContent

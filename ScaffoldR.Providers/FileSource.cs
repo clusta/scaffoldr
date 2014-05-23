@@ -27,7 +27,8 @@ namespace ScaffoldR.Providers
 
         public Task<Resource[]> GetFiles(string path)
         {
-            var files = Directory.EnumerateFiles(path).Select(f => new Resource()
+            var finalPath = Path.IsPathRooted(path) ? path : Path.Combine(basePath, path);
+            var files = Directory.EnumerateFiles(finalPath).Select(f => new Resource()
             {
                 Path = f,
                 Name = Path.GetFileName(f)
