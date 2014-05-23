@@ -106,7 +106,7 @@ namespace ScaffoldR
 
             return files
                 .Where(f => GetExtension(f.Name) == "csv")
-                .ToDictionary(f => GetFileNameWithoutExtension(f.Name), f => ParseCsv(GetFileNameWithoutExtension(f.Name), f.Path) as object);
+                .ToDictionary(f => GetFileNameWithoutExtension(f.Name), f => ParseCsv(GetFileNameWithoutExtension(f.Name), f.Path).Result as object); // todo: use async
         }
 
         private Task<string> GetFileContent(string path)
