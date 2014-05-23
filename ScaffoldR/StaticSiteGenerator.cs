@@ -12,6 +12,7 @@ namespace ScaffoldR
         private ISource source;
         private IOutput output;
         private IYaml yaml;
+        private IIndexer indexer;
 
         private static IDictionary<string, string> mediaContentTypes = new Dictionary<string, string>()
         {
@@ -64,16 +65,21 @@ namespace ScaffoldR
 
         public Task RenderFolder(string path, ITemplate template)
         {
-            return RenderFolder<MetaData>(path, template);
+            return PublishContainer<MetaData>(path, template);
         }
 
-        public async Task RenderFolder<TMetaData>(string path, ITemplate template)
+        public async Task PublishContainer<TMetaData>(string containerName, ITemplate template)
         {
-            var folders = await source.GetFolders(path);
+            var folders = await source.GetFolders(containerName);
 
             foreach (var folder in folders)
             {
                 var page = await ParsePage<TMetaData>(folder.Path);
+
+                if (indexer != null)
+                {
+                    await indexer.AddOrUpdate(page);
+                }
                 
                 using (var outputStream = await output.OpenWriteableStream(page.Slug)) 
                 {
@@ -133,11 +139,12 @@ namespace ScaffoldR
             return sectionContentTypes.ContainsKey(GetExtension(path));
         }
 
-        public StaticSiteGenerator(ISource source, IOutput output, IYaml yaml)
+        public StaticSiteGenerator(ISource source, IOutput output, IYaml yaml, IIndexer indexer)
         {
             this.source = source;
             this.output = output;
             this.yaml = yaml;
+            this.indexer = indexer;
         }
     }
 }
