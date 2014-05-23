@@ -12,7 +12,10 @@ namespace ScaffoldR
         private ISource source;
         private IOutput output;
         private IYaml yaml;
+        private IJson json;
+        private ICsv csv; // todo: implement
         private IIndexer indexer;
+        private ILogger logger; // todo: implement
 
         private static IDictionary<string, string> mediaContentTypes = new Dictionary<string, string>()
         {
@@ -24,6 +27,12 @@ namespace ScaffoldR
         {
             { "html", "text/html" },
             { "md", "text/x-markdown" }
+        };
+
+        private static IDictionary<string, string> metadataContentTypes = new Dictionary<string, string>()
+        {
+            { "yaml", "text/x-yaml" },
+	        { "json", "application/json" }
         };
 
         public Task<Page<MetaData>> ParsePage(string path)
@@ -39,7 +48,7 @@ namespace ScaffoldR
             {
                 Slug = Path.GetFileName(path),
                 MetaData = files
-                    .Where(f => f.Name.Equals("metadata.yaml", StringComparison.OrdinalIgnoreCase))
+                    .Where(f => GetFileNameWithoutExtension(f.Path) == "metadata" && IsMetaData(f.Path))
                     .Select(f => ParseMetaData<TMetaData>(f.Path).Result) // todo: make async
                     .FirstOrDefault(),
                 Sections = files  
@@ -96,13 +105,29 @@ namespace ScaffoldR
         private async Task<TMetaData> ParseMetaData<TMetaData>(string path)
         {
             var fileContent = await GetFileContent(path);
-            
-            return await yaml.Deserialize<TMetaData>(fileContent);
+            var extension = GetExtension(path);
+
+            switch (extension)
+            {
+                case "yaml":
+                    return await yaml.Deserialize<TMetaData>(fileContent);
+                case "json":
+                    return await json.Deserialize<TMetaData>(fileContent);
+                default:
+                    return default(TMetaData);
+            }
         }
 
         private string GetFileName(string path)
         {
-            return Path.GetFileName(path);
+            return Path.GetFileName(path)
+                .ToLower();
+        }
+
+        private string GetFileNameWithoutExtension(string path)
+        {
+            return Path.GetFileNameWithoutExtension(path)
+                .ToLower();
         }
 
         private string GetSectionName(string path)
@@ -139,11 +164,18 @@ namespace ScaffoldR
             return sectionContentTypes.ContainsKey(GetExtension(path));
         }
 
-        public StaticSiteGenerator(ISource source, IOutput output, IYaml yaml, IIndexer indexer)
+        private bool IsMetaData(string path)
+        {
+            return metadataContentTypes.ContainsKey(GetExtension(path));
+        }
+
+        public StaticSiteGenerator(ISource source, IOutput output, IYaml yaml, IJson json, ICsv csv, IIndexer indexer, ILogger logger)
         {
             this.source = source;
             this.output = output;
             this.yaml = yaml;
+            this.json = json;
+            this.csv = csv;
             this.indexer = indexer;
         }
     }

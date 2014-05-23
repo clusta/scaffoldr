@@ -41,7 +41,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ICsv.cs" />
     <Compile Include="IIndexer.cs" />
+    <Compile Include="IJson.cs" />
+    <Compile Include="ILogger.cs" />
     <Compile Include="IOutput.cs" />
     <Compile Include="ISource.cs" />
     <Compile Include="ITemplate.cs" />
