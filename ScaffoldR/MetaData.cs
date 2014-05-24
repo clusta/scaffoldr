@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ScaffoldR
 {
-    public class MetaData
+    public class Metadata
     {
         public string Title { get; set; }
         public string Description { get; set; }

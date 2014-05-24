@@ -35,16 +35,16 @@ namespace ScaffoldR
 	        { "json", "application/json" }
         };
 
-        public Task<Page<MetaData>> ParsePage(string path)
+        public Task<Page<Metadata>> ParsePage(string path)
         {
-            return ParsePage<MetaData>(path);
+            return ParsePage<Metadata>(path);
         }
 
-        public async Task<Page<TMetaData>> ParsePage<TMetaData>(string path)
+        public async Task<Page<TMetadata>> ParsePage<TMetadata>(string path)
         {
             var files = await source.GetFiles(path);           
             
-            var page = new Page<TMetaData>()
+            var page = new Page<TMetadata>()
             {
                 Slug = GetSlug(path)
             };
@@ -56,7 +56,7 @@ namespace ScaffoldR
 
             if (metaDataPath != null) 
             {
-                page.MetaData = await ParseMetaData<TMetaData>(metaDataPath);
+                page.Metadata = await ParseMetaData<TMetadata>(metaDataPath);
             }
 
             page.Sections = files
@@ -89,10 +89,10 @@ namespace ScaffoldR
 
         public Task RenderFolder(string path, ITemplate template)
         {
-            return PublishContainer<MetaData>(path, template);
+            return PublishContainer<Metadata>(path, template);
         }
 
-        public async Task PublishContainer<TMetaData>(string containerName, ITemplate template)
+        public async Task PublishContainer<TMetadata>(string containerName, ITemplate template)
         {
             var folders = await source.GetFolders(containerName);
 
@@ -109,13 +109,13 @@ namespace ScaffoldR
                 return;
             }
 
-            Page<TMetaData> page = null;
+            Page<TMetadata> page = null;
 
             foreach (var folder in folders)
             {
                 try
                 {
-                    page = await ParsePage<TMetaData>(folder.Path);
+                    page = await ParsePage<TMetadata>(folder.Path);
 
                     page.Datasources = datasources;
                 }
@@ -186,7 +186,7 @@ namespace ScaffoldR
             }
         }
 
-        private async Task<TMetaData> ParseMetaData<TMetaData>(string path)
+        private async Task<TMetadata> ParseMetaData<TMetadata>(string path)
         {
             var extension = GetExtension(path);
 
@@ -195,11 +195,11 @@ namespace ScaffoldR
                 switch (extension)
                 {
                     case "yaml":
-                        return await yaml.Deserialize<TMetaData>(inputStream);
+                        return await yaml.Deserialize<TMetadata>(inputStream);
                     case "json":
-                        return await json.Deserialize<TMetaData>(inputStream);
+                        return await json.Deserialize<TMetadata>(inputStream);
                     default:
-                        return default(TMetaData);
+                        return default(TMetadata);
                 }
             }
         }
