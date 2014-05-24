@@ -46,7 +46,11 @@ namespace ScaffoldR
             
             var page = new Page<TMetadata>()
             {
-                Slug = GetSlug(path)
+                Slug = GetSlug(path),
+                Thumbnail = files
+                    .Where(f => IsMedia(f) && GetFileNameWithoutExtension(f) == "thumbnail")
+                    .Select(f => GetFileName(f))
+                    .FirstOrDefault()
             };
 
             var metaDataPath = files
