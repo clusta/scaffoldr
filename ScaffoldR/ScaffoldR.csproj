@@ -49,7 +49,6 @@
     <Compile Include="ISource.cs" />
     <Compile Include="ITemplate.cs" />
     <Compile Include="IYaml.cs" />
-    <Compile Include="Resource.cs" />
     <Compile Include="Media.cs" />
     <Compile Include="Metadata.cs" />
     <Compile Include="Page.cs" />

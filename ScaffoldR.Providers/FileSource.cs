@@ -11,29 +11,18 @@ namespace ScaffoldR.Providers
     {
         private string basePath;
         
-        public Task<Resource[]> GetFolders(string containerName)
+        public Task<IEnumerable<string>> GetFolders(string containerName)
         {
             var path = Path.Combine(basePath, containerName);
-            var folders = Directory.EnumerateDirectories(path)
-                .Select(d => new Resource()
-                {
-                    Path = d,
-                    Name = Path.GetFileName(d)
-                })
-                .ToArray();
+            var folders = Directory.EnumerateDirectories(path);
 
             return Task.FromResult(folders);
         }
 
-        public Task<Resource[]> GetFiles(string path)
+        public Task<IEnumerable<string>> GetFiles(string path)
         {
             var finalPath = Path.IsPathRooted(path) ? path : Path.Combine(basePath, path);
-            var files = Directory.EnumerateFiles(finalPath).Select(f => new Resource()
-            {
-                Path = f,
-                Name = Path.GetFileName(f)
-            })
-            .ToArray();
+            var files = Directory.EnumerateFiles(finalPath);
             
             return Task.FromResult(files);
         }

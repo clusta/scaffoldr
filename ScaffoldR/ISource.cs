@@ -9,8 +9,8 @@ namespace ScaffoldR
 {
     public interface ISource
     {
-        Task<Resource[]> GetFolders(string containerName);
-        Task<Resource[]> GetFiles(string path);
+        Task<IEnumerable<string>> GetFolders(string containerName);
+        Task<IEnumerable<string>> GetFiles(string path);
         Task<Stream> OpenRead(string path);
     }
 }

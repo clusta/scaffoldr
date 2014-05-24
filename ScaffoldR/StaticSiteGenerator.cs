@@ -50,8 +50,8 @@ namespace ScaffoldR
             };
 
             var metaDataPath = files
-                    .Where(f => GetFileNameWithoutExtension(f.Path) == "metadata" && IsMetaData(f.Path))
-                    .Select(f => f.Path)
+                    .Where(f => GetFileNameWithoutExtension(f) == "metadata" && IsMetaData(f))
+                    .Select(f => f)
                     .FirstOrDefault();
 
             if (metaDataPath != null) 
@@ -60,21 +60,21 @@ namespace ScaffoldR
             }
 
             page.Sections = files
-                .Where(f => IsSectionName(f.Name))
-                .OrderBy(f => GetSortOrder(f.Name))
-                .GroupBy(f => GetSectionName(f.Name))
+                .Where(f => IsSectionName(f))
+                .OrderBy(f => GetSortOrder(f))
+                .GroupBy(f => GetSectionName(f))
                 .ToDictionary(g => g.Key, g => new Section()
                 {
                     Source = g
-                        .Where(m => IsSection(m.Name))
-                        .Select(m => m.Path)
+                        .Where(m => IsSection(m))
+                        .Select(m => m)
                         .FirstOrDefault(),
                     Media = g
-                        .Where(m => IsMedia(m.Path))
+                        .Where(m => IsMedia(m))
                         .Select(m => new Media()
                         {
-                            Uri = GetFileName(m.Name),
-                            ContentType = mediaContentTypes[GetExtension(m.Path)]
+                            Uri = GetFileName(m),
+                            ContentType = mediaContentTypes[GetExtension(m)]
                         })
                         .ToList()
                 });
@@ -115,13 +115,13 @@ namespace ScaffoldR
             {
                 try
                 {
-                    page = await ParsePage<TMetadata>(folder.Path);
+                    page = await ParsePage<TMetadata>(folder);
 
                     page.Datasources = datasources;
                 }
                 catch
                 {
-                    logger.Log(string.Format("Error: failed to parse page '{0}'", folder.Path));
+                    logger.Log(string.Format("Error: failed to parse page '{0}'", folder));
 
                     continue; // skip publish and index, other steps can continue
                 }
@@ -132,12 +132,12 @@ namespace ScaffoldR
                     {
                         await template.RenderPage(outputStream, page);
 
-                        logger.Log(string.Format("Success: published '{0}'", folder.Name));
+                        logger.Log(string.Format("Success: published '{0}'", folder));
                     }
                 }
                 catch
                 {
-                    logger.Log(string.Format("Error: failed to publish page '{0}'", folder.Path));
+                    logger.Log(string.Format("Error: failed to publish page '{0}'", folder));
                 }
 
                 if (indexer != null)
@@ -148,7 +148,7 @@ namespace ScaffoldR
                     }
                     catch
                     {
-                        logger.Log(string.Format("Error: failed to index page '{0}'", folder.Path));
+                        logger.Log(string.Format("Error: failed to index page '{0}'", folder));
                     }
                 }
             }
@@ -159,14 +159,14 @@ namespace ScaffoldR
             var datasources = new Dictionary<string, object>();
             var files = await source.GetFiles(containerName); 
             var csv = files
-                .Where(f => GetExtension(f.Name) == "csv")
+                .Where(f => GetExtension(f) == "csv")
                 .ToList();
 
             foreach (var file in csv) 
             {
-                var key = GetFileNameWithoutExtension(file.Name);
+                var key = GetFileNameWithoutExtension(file);
 
-                datasources.Add(key, await ParseCsv(key, file.Path));
+                datasources.Add(key, await ParseCsv(key, file));
             }
 
             return datasources;
