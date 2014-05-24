@@ -9,6 +9,6 @@ namespace ScaffoldR
 {
     public interface IOutput
     {
-        Task<Stream> OpenWriteableStream(string path);
+        Task<Stream> OpenWrite(string path);
     }
 }

@@ -93,7 +93,7 @@ namespace ScaffoldR
                     await indexer.AddOrUpdate(page);
                 }
                 
-                using (var outputStream = await output.OpenWriteableStream(page.Slug)) 
+                using (var outputStream = await output.OpenWrite(page.Slug)) 
                 {
                     await template.RenderPage(outputStream, page);
                 }
@@ -109,32 +109,39 @@ namespace ScaffoldR
                 .ToDictionary(f => GetFileNameWithoutExtension(f.Name), f => ParseCsv(GetFileNameWithoutExtension(f.Name), f.Path).Result as object); // todo: use async
         }
 
-        private Task<string> GetFileContent(string path)
+        private async Task<string> GetFileContent(string path)
         {
-            return source.ReadAsString(path);
+            using (var inputStream = await source.OpenRead(path))
+            using (var streamReader = new StreamReader(inputStream))
+            {
+                return streamReader.ReadToEnd();
+            }
         }
 
         private async Task<TMetaData> ParseMetaData<TMetaData>(string path)
         {
-            var fileContent = await GetFileContent(path);
             var extension = GetExtension(path);
 
-            switch (extension)
+            using (var inputStream = await source.OpenRead(path))
             {
-                case "yaml":
-                    return await yaml.Deserialize<TMetaData>(fileContent);
-                case "json":
-                    return await json.Deserialize<TMetaData>(fileContent);
-                default:
-                    return default(TMetaData);
+                switch (extension)
+                {
+                    case "yaml":
+                        return await yaml.Deserialize<TMetaData>(inputStream);
+                    case "json":
+                        return await json.Deserialize<TMetaData>(inputStream);
+                    default:
+                        return default(TMetaData);
+                }
             }
         }
 
         private async Task<object[]> ParseCsv(string key, string path)
         {
-            var fileContent = await GetFileContent(path);
-
-            return await csv.Deserialize(key, fileContent);
+            using (var inputStream = await source.OpenRead(path))
+            {
+                return await csv.Deserialize(key, inputStream);
+            }
         }
 
         private string GetFileName(string path)

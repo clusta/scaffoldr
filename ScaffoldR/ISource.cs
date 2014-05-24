@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,6 +11,6 @@ namespace ScaffoldR
     {
         Task<Resource[]> GetFolders(string containerName);
         Task<Resource[]> GetFiles(string path);
-        Task<string> ReadAsString(string path);
+        Task<Stream> OpenRead(string path);
     }
 }

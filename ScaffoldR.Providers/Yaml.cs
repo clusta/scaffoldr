@@ -11,13 +11,15 @@ namespace ScaffoldR.Providers
 {
     public class Yaml : IYaml
     {
-        public Task<T> Deserialize<T>(string data)
+        public Task<T> Deserialize<T>(Stream inputStream)
         {
-            var input = new StringReader(data);
-            var deserializer = new Deserializer(null, new CamelCaseNamingConvention(), true);
-            var result = (T)deserializer.Deserialize(input, typeof(T));
+            using (var streamReader = new StreamReader(inputStream)) 
+            {
+                var deserializer = new Deserializer(null, new CamelCaseNamingConvention(), true);
+                var result = (T)deserializer.Deserialize(streamReader, typeof(T));
 
-            return Task.FromResult(result);
+                return Task.FromResult(result);
+            }
         }
     }
 }

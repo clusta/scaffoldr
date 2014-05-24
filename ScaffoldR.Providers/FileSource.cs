@@ -38,11 +38,11 @@ namespace ScaffoldR.Providers
             return Task.FromResult(files);
         }
 
-        public Task<string> ReadAsString(string path)
+        public Task<Stream> OpenRead(string path)
         {
-            var text = File.ReadAllText(path);
+            var fileStream = (Stream)File.OpenRead(path);
             
-            return Task.FromResult(text);
+            return Task.FromResult(fileStream);
         }
 
         public FileSource(string basePath)

@@ -11,7 +11,7 @@ namespace ScaffoldR.Providers
     {
         private string basePath;
         
-        public Task<Stream> OpenWriteableStream(string path)
+        public Task<Stream> OpenWrite(string path)
         {
             var absolutePath = Path.Combine(basePath, path);
             var fileStream = (Stream)File.Open(absolutePath, FileMode.Create);
