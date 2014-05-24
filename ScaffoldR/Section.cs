@@ -8,6 +8,7 @@ namespace ScaffoldR
     public class Section
     {
         public string Content { get; set; }
+        public string Source { get; set; }
         public IList<Media> Media { get; set; }
     }
 }

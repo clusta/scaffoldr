@@ -18,6 +18,11 @@ namespace ScaffoldR
         {
             get
             {
+                if (Sections == null)
+                {
+                    return string.Empty;
+                }
+                
                 var content = Sections
                     .Where(s => s.Value != null)
                     .Select(s => s.Value.Content)

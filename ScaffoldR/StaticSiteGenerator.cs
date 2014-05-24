@@ -44,32 +44,47 @@ namespace ScaffoldR
         {
             var files = await source.GetFiles(path);           
             
-            return new Page<TMetaData>()
+            var page = new Page<TMetaData>()
             {
-                Slug = Path.GetFileName(path),
-                MetaData = files
-                    .Where(f => GetFileNameWithoutExtension(f.Path) == "metadata" && IsMetaData(f.Path))
-                    .Select(f => ParseMetaData<TMetaData>(f.Path).Result) // todo: make async
-                    .FirstOrDefault(),
-                Sections = files  
-                    .OrderBy(f => GetSortOrder(f.Name))
-                    .GroupBy(f => GetSectionName(f.Name))
-                    .ToDictionary(g => g.Key, g => new Section() 
-                    {
-                        Content = g
-                            .Where(m => IsSection(m.Name))
-                            .Select(m => GetFileContent(m.Path).Result) // todo: make async
-                            .FirstOrDefault(),
-                        Media = g
-                            .Where(m => IsMedia(m.Path))
-                            .Select(m => new Media() 
-                            {
-                                Uri = GetFileName(m.Name),
-                                ContentType = mediaContentTypes[GetExtension(m.Path)]
-                            })
-                            .ToList()
-                    })
+                Slug = GetSlug(path)
             };
+
+            var metaDataPath = files
+                    .Where(f => GetFileNameWithoutExtension(f.Path) == "metadata" && IsMetaData(f.Path))
+                    .Select(f => f.Path)
+                    .FirstOrDefault();
+
+            if (metaDataPath != null) 
+            {
+                page.MetaData = await ParseMetaData<TMetaData>(metaDataPath);
+            }
+
+            page.Sections = files
+                .Where(f => IsSectionName(f.Name))
+                .OrderBy(f => GetSortOrder(f.Name))
+                .GroupBy(f => GetSectionName(f.Name))
+                .ToDictionary(g => g.Key, g => new Section()
+                {
+                    Source = g
+                        .Where(m => IsSection(m.Name))
+                        .Select(m => m.Path)
+                        .FirstOrDefault(),
+                    Media = g
+                        .Where(m => IsMedia(m.Path))
+                        .Select(m => new Media()
+                        {
+                            Uri = GetFileName(m.Name),
+                            ContentType = mediaContentTypes[GetExtension(m.Path)]
+                        })
+                        .ToList()
+                });
+
+            foreach (var section in page.Sections.Values.Where(s => !string.IsNullOrEmpty(s.Source)))
+            {
+                section.Content = await GetFileContent(section.Source);
+            }
+
+            return page;
         }
 
         public Task RenderFolder(string path, ITemplate template)
@@ -102,11 +117,25 @@ namespace ScaffoldR
 
         public async Task<Dictionary<string, object>> GetDatasources(string containerName)
         {
+            var datasources = new Dictionary<string, object>();
             var files = await source.GetFiles(containerName); 
-
-            return files
+            var csv = files
                 .Where(f => GetExtension(f.Name) == "csv")
-                .ToDictionary(f => GetFileNameWithoutExtension(f.Name), f => ParseCsv(GetFileNameWithoutExtension(f.Name), f.Path).Result as object); // todo: use async
+                .ToList();
+
+            foreach (var file in csv) 
+            {
+                var key = GetFileNameWithoutExtension(file.Name);
+
+                datasources.Add(key, await ParseCsv(key, file.Path));
+            }
+
+            return datasources;
+        }
+
+        private string GetSlug(string path)
+        {
+            return Path.GetFileName(path);
         }
 
         private async Task<string> GetFileContent(string path)
@@ -193,6 +222,12 @@ namespace ScaffoldR
         private bool IsMetaData(string path)
         {
             return metadataContentTypes.ContainsKey(GetExtension(path));
+        }
+
+        private bool IsSectionName(string path)
+        {
+            return !new string[] { "metadata", "thumbs", "thumbnail", "icon" }
+                .Contains(GetSectionName(path));
         }
 
         public StaticSiteGenerator(ISource source, IOutput output, IYaml yaml, IJson json, ICsv csv, IIndexer indexer, ILogger logger)
