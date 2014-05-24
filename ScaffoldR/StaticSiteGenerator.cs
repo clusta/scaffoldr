@@ -42,14 +42,14 @@ namespace ScaffoldR
 
         public async Task<Page<TMetadata>> ParsePage<TMetadata>(string path)
         {
-            var files = await source.GetFiles(path);           
-            
+            var files = await source.GetFiles(path);
+            var slug = GetSlug(path);
             var page = new Page<TMetadata>()
             {
-                Slug = GetSlug(path),
+                Slug = slug,
                 Thumbnail = files
                     .Where(f => IsMedia(f) && GetFileNameWithoutExtension(f) == "thumbnail")
-                    .Select(f => GetFileName(f))
+                    .Select(f => RewriteImagePath(slug, f))
                     .FirstOrDefault()
             };
 
@@ -77,7 +77,7 @@ namespace ScaffoldR
                         .Where(m => IsMedia(m))
                         .Select(m => new Media()
                         {
-                            Uri = GetFileName(m),
+                            Uri = RewriteImagePath(page.Slug, m),
                             ContentType = mediaContentTypes[GetExtension(m)]
                         })
                         .ToList()
@@ -127,17 +127,31 @@ namespace ScaffoldR
                 {
                     logger.Log(string.Format("Error: failed to parse page '{0}'", folder));
 
-                    continue; // skip publish and index, other steps can continue
+                    continue; // skip publish and index, continue processing other pages
                 }
 
                 try
                 {
+                    // publish page
                     using (var outputStream = await output.OpenWrite(page.Slug)) 
                     {
                         await template.RenderPage(outputStream, page);
-
-                        logger.Log(string.Format("Success: published '{0}'", folder));
                     }
+
+                    // publish images
+                    var files = await source.GetFiles(folder);
+                    var media = files.Where(f => IsMedia(f));
+
+                    foreach (var image in media)
+                    {
+                        using (var inputStream = await source.OpenRead(image))
+                        using (var outputStream = await output.OpenWrite(RewriteImagePath(page.Slug, image)))
+                        {
+                            await inputStream.CopyToAsync(outputStream);
+                        }
+                    }
+
+                    logger.Log(string.Format("Success: published '{0}'", folder));
                 }
                 catch
                 {
@@ -271,6 +285,11 @@ namespace ScaffoldR
         {
             return !new string[] { "metadata", "thumbs", "thumbnail", "icon" }
                 .Contains(GetSectionName(path));
+        }
+
+        private string RewriteImagePath(string pageSlug, string imagePath)
+        {
+            return string.Format("{0}-{1}", pageSlug, GetFileName(imagePath));
         }
 
         public StaticSiteGenerator(ISource source, IOutput output, IYaml yaml, IJson json, ICsv csv, IIndexer indexer, ILogger logger)
