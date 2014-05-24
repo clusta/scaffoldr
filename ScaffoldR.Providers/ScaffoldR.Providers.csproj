@@ -63,6 +63,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Csv.cs" />
+    <Compile Include="DebugLogger.cs" />
     <Compile Include="FileOutput.cs" />
     <Compile Include="FileSource.cs" />
     <Compile Include="Json.cs" />

@@ -13,9 +13,9 @@ namespace ScaffoldR
         private IOutput output;
         private IYaml yaml;
         private IJson json;
-        private ICsv csv; // todo: implement
+        private ICsv csv;
         private IIndexer indexer;
-        private ILogger logger; // todo: implement
+        private ILogger logger;
 
         private static IDictionary<string, string> mediaContentTypes = new Dictionary<string, string>()
         {
@@ -92,25 +92,64 @@ namespace ScaffoldR
             return PublishContainer<MetaData>(path, template);
         }
 
-        public async Task PublishContainer<TMetaData>(string containerName, ITemplate template) // todo: consider removing contains concept
+        public async Task PublishContainer<TMetaData>(string containerName, ITemplate template)
         {
             var folders = await source.GetFolders(containerName);
-            var datasources = await GetDatasources(containerName);
+
+            Dictionary<string, object> datasources;
+
+            try
+            {
+                datasources = await GetDatasources(containerName);
+            }
+            catch
+            {
+                logger.Log("Error: failed to parse datasources");
+                
+                return;
+            }
+
+            Page<TMetaData> page = null;
 
             foreach (var folder in folders)
             {
-                var page = await ParsePage<TMetaData>(folder.Path);
+                try
+                {
+                    page = await ParsePage<TMetaData>(folder.Path);
 
-                page.Datasources = datasources;
+                    page.Datasources = datasources;
+                }
+                catch
+                {
+                    logger.Log(string.Format("Error: failed to parse page '{0}'", folder.Path));
+
+                    continue; // skip publish and index, other steps can continue
+                }
+
+                try
+                {
+                    using (var outputStream = await output.OpenWrite(page.Slug)) 
+                    {
+                        await template.RenderPage(outputStream, page);
+
+                        logger.Log(string.Format("Success: published '{0}'", folder.Name));
+                    }
+                }
+                catch
+                {
+                    logger.Log(string.Format("Error: failed to publish page '{0}'", folder.Path));
+                }
 
                 if (indexer != null)
                 {
-                    await indexer.AddOrUpdate(page);
-                }
-                
-                using (var outputStream = await output.OpenWrite(page.Slug)) 
-                {
-                    await template.RenderPage(outputStream, page);
+                    try
+                    {
+                        await indexer.AddOrUpdate(page);
+                    }
+                    catch
+                    {
+                        logger.Log(string.Format("Error: failed to index page '{0}'", folder.Path));
+                    }
                 }
             }
         }
@@ -238,6 +277,7 @@ namespace ScaffoldR
             this.json = json;
             this.csv = csv;
             this.indexer = indexer;
+            this.logger = logger;
         }
     }
 }
