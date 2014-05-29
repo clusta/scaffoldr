@@ -40,7 +40,9 @@ namespace ScaffoldR
 
                 if (Sections != null)
                 {
-                    media.AddRange(Sections.SelectMany(s => s.Value.Media));
+                    media.AddRange(Sections
+                        .Where(s => s.Value.Media != null)
+                        .SelectMany(s => s.Value.Media));
                 }
 
                 if (Thumbnail != null)
