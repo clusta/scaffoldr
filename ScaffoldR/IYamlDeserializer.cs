@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 
 namespace ScaffoldR
 {
-    public interface IOutput
+    public interface IYamlDeserializer
     {
-        Task<Stream> OpenWrite(string path);
+        T Deserialize<T>(Stream inputStream);
     }
 }

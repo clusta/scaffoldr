@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ScaffoldR.Providers
 {
-    public class DebugLogger : ILogger
+    public class DebugPublishLog : IPublishLog
     {
         public void Log(string message)
         {

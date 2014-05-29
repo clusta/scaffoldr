@@ -8,21 +8,16 @@ using System.Threading.Tasks;
 
 namespace ScaffoldR.Providers
 {
-    public class Mustache : ITemplate
+    public class MustacheTextTemplate : ITextTemplate
     {
         private Generator generator;
 
-        public async Task RenderPage(Stream outputStream, object page)
+        public string RenderTemplate(object page)
         {
-            var output = generator.Render(page);
-
-            using (var streamWriter = new StreamWriter(outputStream))
-            {
-                await streamWriter.WriteAsync(output);
-            }
+            return generator.Render(page);
         }
 
-        public Mustache(string template) 
+        public MustacheTextTemplate(string template) 
         {
             var compiler = new FormatCompiler();
 

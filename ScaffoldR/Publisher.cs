@@ -7,15 +7,15 @@ using System.Threading.Tasks;
 
 namespace ScaffoldR
 {
-    public class StaticSiteGenerator
+    public class Publisher
     {
-        private ISource source;
-        private IOutput output;
-        private IYaml yaml;
-        private IJson json;
-        private ICsv csv;
-        private IIndexer indexer;
-        private ILogger logger;
+        private IPublishSource source;
+        private IPublishOutput output;
+        private IYamlDeserializer yaml;
+        private IJsonDeserializer json;
+        private ICsvDeserializer csv;
+        private IPublishIndex indexer;
+        private IPublishLog logger;
 
         private static IDictionary<string, string> mediaContentTypes = new Dictionary<string, string>()
         {
@@ -35,21 +35,26 @@ namespace ScaffoldR
 	        { "json", "application/json" }
         };
 
-        public Task<Page<Metadata>> ParsePage(string path)
+        public Task<Page<Metadata>> ParsePageAsync(string path)
         {
-            return ParsePage<Metadata>(path);
+            return ParsePageAsync<Metadata>(path);
         }
 
-        public async Task<Page<TMetadata>> ParsePage<TMetadata>(string path)
+        public async Task<Page<TMetadata>> ParsePageAsync<TMetadata>(string path)
         {
-            var files = await source.GetFiles(path);
+            var files = await source.GetPageSourcesAsync(path);
             var slug = GetSlug(path);
             var page = new Page<TMetadata>()
             {
                 Slug = slug,
                 Thumbnail = files
                     .Where(f => IsMedia(f) && GetFileNameWithoutExtension(f) == "thumbnail")
-                    .Select(f => RewriteImagePath(slug, f))
+                    .Select(f => new Media() 
+                    {
+                        Source = f,
+                        Uri = RewriteImagePath(slug, f),
+                        ContentType = mediaContentTypes[GetExtension(f)]
+                    })
                     .FirstOrDefault()
             };
 
@@ -60,7 +65,7 @@ namespace ScaffoldR
 
             if (metaDataPath != null) 
             {
-                page.Metadata = await ParseMetaData<TMetadata>(metaDataPath);
+                page.Metadata = await ParseMetadataAsync<TMetadata>(metaDataPath);
             }
 
             page.Sections = files
@@ -77,6 +82,7 @@ namespace ScaffoldR
                         .Where(m => IsMedia(m))
                         .Select(m => new Media()
                         {
+                            Source = m,
                             Uri = RewriteImagePath(page.Slug, m),
                             ContentType = mediaContentTypes[GetExtension(m)]
                         })
@@ -85,26 +91,26 @@ namespace ScaffoldR
 
             foreach (var section in page.Sections.Values.Where(s => !string.IsNullOrEmpty(s.Source)))
             {
-                section.Content = await GetFileContent(section.Source);
+                section.Content = await ReadFileAsStringAsync(section.Source);
             }
 
             return page;
         }
 
-        public Task RenderFolder(string path, ITemplate template)
+        public Task PublishContainerAsync(string path, ITextTemplate template)
         {
-            return PublishContainer<Metadata>(path, template);
+            return PublishContainerAsync<Metadata>(path, template);
         }
 
-        public async Task PublishContainer<TMetadata>(string containerName, ITemplate template)
+        public async Task PublishContainerAsync<TMetadata>(string containerName, ITextTemplate template)
         {
-            var folders = await source.GetFolders(containerName);
+            var folders = await source.GetPagesAsync(containerName);
 
             Dictionary<string, object> datasources;
 
             try
             {
-                datasources = await GetDatasources(containerName);
+                datasources = await GetDatasourcesAsync(containerName);
             }
             catch
             {
@@ -119,7 +125,7 @@ namespace ScaffoldR
             {
                 try
                 {
-                    page = await ParsePage<TMetadata>(folder);
+                    page = await ParsePageAsync<TMetadata>(folder);
 
                     page.Datasources = datasources;
                 }
@@ -133,21 +139,19 @@ namespace ScaffoldR
                 try
                 {
                     // publish page
-                    using (var outputStream = await output.OpenWrite(page.Slug)) 
+                    var stringOutput = template.RenderTemplate(page);
+
+                    using (var inputStream = new MemoryStream(Encoding.UTF8.GetBytes(stringOutput))) 
                     {
-                        await template.RenderPage(outputStream, page);
+                        await output.SaveAsync(inputStream, page.Slug);
                     }
 
                     // publish images
-                    var files = await source.GetFiles(folder);
-                    var media = files.Where(f => IsMedia(f));
-
-                    foreach (var image in media)
+                    foreach (var media in page.AllMedia)
                     {
-                        using (var inputStream = await source.OpenRead(image))
-                        using (var outputStream = await output.OpenWrite(RewriteImagePath(page.Slug, image)))
+                        using (var inputStream = await source.OpenStreamAsync(media.Source))
                         {
-                            await inputStream.CopyToAsync(outputStream);
+                            await output.SaveAsync(inputStream, media.Uri);
                         }
                     }
 
@@ -172,10 +176,10 @@ namespace ScaffoldR
             }
         }
 
-        public async Task<Dictionary<string, object>> GetDatasources(string containerName)
+        public async Task<Dictionary<string, object>> GetDatasourcesAsync(string containerName)
         {
             var datasources = new Dictionary<string, object>();
-            var files = await source.GetFiles(containerName); 
+            var files = await source.GetPageSourcesAsync(containerName); 
             var csv = files
                 .Where(f => GetExtension(f) == "csv")
                 .ToList();
@@ -184,7 +188,7 @@ namespace ScaffoldR
             {
                 var key = GetFileNameWithoutExtension(file);
 
-                datasources.Add(key, await ParseCsv(key, file));
+                datasources.Add(key, await ParseCsvAsync(key, file));
             }
 
             return datasources;
@@ -195,38 +199,38 @@ namespace ScaffoldR
             return Path.GetFileName(path);
         }
 
-        private async Task<string> GetFileContent(string path)
+        private async Task<string> ReadFileAsStringAsync(string path)
         {
-            using (var inputStream = await source.OpenRead(path))
+            using (var inputStream = await source.OpenStreamAsync(path))
             using (var streamReader = new StreamReader(inputStream))
             {
                 return streamReader.ReadToEnd();
             }
         }
 
-        private async Task<TMetadata> ParseMetaData<TMetadata>(string path)
+        private async Task<TMetadata> ParseMetadataAsync<TMetadata>(string path)
         {
             var extension = GetExtension(path);
 
-            using (var inputStream = await source.OpenRead(path))
+            using (var inputStream = await source.OpenStreamAsync(path))
             {
                 switch (extension)
                 {
                     case "yaml":
-                        return await yaml.Deserialize<TMetadata>(inputStream);
+                        return yaml.Deserialize<TMetadata>(inputStream);
                     case "json":
-                        return await json.Deserialize<TMetadata>(inputStream);
+                        return json.Deserialize<TMetadata>(inputStream);
                     default:
                         return default(TMetadata);
                 }
             }
         }
 
-        private async Task<object[]> ParseCsv(string key, string path)
+        private async Task<object[]> ParseCsvAsync(string key, string path)
         {
-            using (var inputStream = await source.OpenRead(path))
+            using (var inputStream = await source.OpenStreamAsync(path))
             {
-                return await csv.Deserialize(key, inputStream);
+                return csv.Deserialize(key, inputStream);
             }
         }
 
@@ -292,7 +296,13 @@ namespace ScaffoldR
             return string.Format("{0}-{1}", pageSlug, GetFileName(imagePath));
         }
 
-        public StaticSiteGenerator(ISource source, IOutput output, IYaml yaml, IJson json, ICsv csv, IIndexer indexer, ILogger logger)
+        public Publisher(IPublishSource source, 
+            IPublishOutput output, 
+            IYamlDeserializer yaml, 
+            IJsonDeserializer json, 
+            ICsvDeserializer csv, 
+            IPublishIndex indexer, 
+            IPublishLog logger)
         {
             this.source = source;
             this.output = output;

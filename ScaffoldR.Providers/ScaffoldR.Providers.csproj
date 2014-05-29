@@ -30,6 +30,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AWSSDK, Version=2.1.1.0, Culture=neutral, PublicKeyToken=9f476d3089b52be3, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Visual Studio 2013\Projects\ScaffoldrTesting\packages\AWSSDK.2.1.1.0\lib\net45\AWSSDK.dll</HintPath>
+    </Reference>
     <Reference Include="FileHelpers">
       <HintPath>..\..\..\Visual Studio 2013\Projects\ScaffoldrTesting\packages\FileHelpers.2.0.0.0\lib\FileHelpers.dll</HintPath>
     </Reference>
@@ -62,13 +66,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Csv.cs" />
-    <Compile Include="DebugLogger.cs" />
-    <Compile Include="FileOutput.cs" />
-    <Compile Include="FileSource.cs" />
-    <Compile Include="Json.cs" />
-    <Compile Include="Mustache.cs" />
-    <Compile Include="Yaml.cs" />
+    <Compile Include="AmazonS3PublishOutput.cs" />
+    <Compile Include="FileHelpersCsvDeserializer.cs" />
+    <Compile Include="DebugPublishLog.cs" />
+    <Compile Include="FileSystemPublishOutput.cs" />
+    <Compile Include="FileSystemPublishSource.cs" />
+    <Compile Include="JsonNetDeserializer.cs" />
+    <Compile Include="MustacheTextTemplate.cs" />
+    <Compile Include="YamlDotNetDeserializer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

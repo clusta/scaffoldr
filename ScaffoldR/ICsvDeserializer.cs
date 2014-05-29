@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 
 namespace ScaffoldR
 {
-    public interface IJson
+    public interface ICsvDeserializer
     {
-        Task<T> Deserialize<T>(Stream inputStream);
+        object[] Deserialize(string key, Stream inputStream);
     }
 }

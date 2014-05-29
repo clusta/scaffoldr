@@ -8,6 +8,7 @@ namespace ScaffoldR
 {
     public class Media
     {
+        public string Source { get; set; }
         public string Uri { get; set; }
         public string ContentType { get; set; }
     }

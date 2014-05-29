@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 
 namespace ScaffoldR
 {
-    public interface ICsv
+    public interface IPublishOutput
     {
-        Task<object[]> Deserialize(string key, Stream inputStream);
+        Task SaveAsync(Stream inputStream, string path);
     }
 }

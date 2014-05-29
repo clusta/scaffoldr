@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ScaffoldR
 {
-    public interface IIndexer
+    public interface IPublishIndex
     {
         Task AddOrUpdate(object page);
     }

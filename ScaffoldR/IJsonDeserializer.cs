@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 
 namespace ScaffoldR
 {
-    public interface ITemplate
+    public interface IJsonDeserializer
     {
-        Task RenderPage(Stream outputStream, object page);
+        T Deserialize<T>(Stream inputStream);
     }
 }

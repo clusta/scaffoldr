@@ -12,7 +12,7 @@ namespace ScaffoldR
         public TMetadata Metadata { get; set; }
         public IDictionary<string, Section> Sections { get; set; }
         public IDictionary<string, object> Datasources { get; set; }
-        public string Thumbnail { get; set; }
+        public Media Thumbnail { get; set; }
 
         public string AllContent
         {
@@ -29,6 +29,26 @@ namespace ScaffoldR
                     .ToArray();
                 
                 return string.Concat(content);
+            }
+        }
+
+        public IEnumerable<Media> AllMedia
+        {
+            get
+            {
+                var media = new List<Media>();
+
+                if (Sections != null)
+                {
+                    media.AddRange(Sections.SelectMany(s => s.Value.Media));
+                }
+
+                if (Thumbnail != null)
+                {
+                    media.Add(Thumbnail);
+                }
+
+                return media;
             }
         }
     }

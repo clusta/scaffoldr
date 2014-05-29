@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ScaffoldR
 {
-    public interface ILogger
+    public interface IPublishLog
     {
         void Log(string message);
     }

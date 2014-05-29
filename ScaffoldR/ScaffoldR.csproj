@@ -41,20 +41,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ICsv.cs" />
-    <Compile Include="IIndexer.cs" />
-    <Compile Include="IJson.cs" />
-    <Compile Include="ILogger.cs" />
-    <Compile Include="IOutput.cs" />
-    <Compile Include="ISource.cs" />
-    <Compile Include="ITemplate.cs" />
-    <Compile Include="IYaml.cs" />
+    <Compile Include="ICsvDeserializer.cs" />
+    <Compile Include="IPublishIndex.cs" />
+    <Compile Include="IJsonDeserializer.cs" />
+    <Compile Include="IPublishLog.cs" />
+    <Compile Include="IPublishOutput.cs" />
+    <Compile Include="IPublishSource.cs" />
+    <Compile Include="ITextTemplate.cs" />
+    <Compile Include="IYamlDeserializer.cs" />
     <Compile Include="Media.cs" />
     <Compile Include="Metadata.cs" />
     <Compile Include="Page.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Section.cs" />
-    <Compile Include="StaticSiteGenerator.cs" />
+    <Compile Include="Publisher.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

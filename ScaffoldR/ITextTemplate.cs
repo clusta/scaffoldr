@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 
 namespace ScaffoldR
 {
-    public interface IYaml
+    public interface ITextTemplate
     {
-        Task<T> Deserialize<T>(Stream inputStream);
+        string RenderTemplate(object page);
     }
 }

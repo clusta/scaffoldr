@@ -7,19 +7,21 @@ using System.Threading.Tasks;
 
 namespace ScaffoldR.Providers
 {
-    public class FileOutput : IOutput
+    public class FileSystemPublishOutput : IPublishOutput
     {
         private string basePath;
         
-        public Task<Stream> OpenWrite(string path)
+        public async Task SaveAsync(Stream inputStream, string path)
         {
             var absolutePath = Path.Combine(basePath, path);
-            var fileStream = (Stream)File.Open(absolutePath, FileMode.Create);
-            
-            return Task.FromResult(fileStream);
+
+            using (var outputStream = File.Open(absolutePath, FileMode.Create))
+            {
+                await inputStream.CopyToAsync(outputStream);
+            }
         }
 
-        public FileOutput(string basePath)
+        public FileSystemPublishOutput(string basePath)
         {
             this.basePath = basePath;
         }

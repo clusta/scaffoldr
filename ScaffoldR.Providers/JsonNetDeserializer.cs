@@ -8,18 +8,16 @@ using System.Threading.Tasks;
 
 namespace ScaffoldR.Providers
 {
-    public class Json : IJson
+    public class JsonNetDeserializer : IJsonDeserializer
     {
-        public Task<T> Deserialize<T>(Stream inputStream)
+        public T Deserialize<T>(Stream inputStream)
         {
             var jsonSerializer = new JsonSerializer();
 
             using (var streamReader = new StreamReader(inputStream))
             using (var jsonReader = new JsonTextReader(streamReader)) 
             {
-                var model = jsonSerializer.Deserialize<T>(jsonReader);
-                
-                return Task.FromResult(model);
+                return jsonSerializer.Deserialize<T>(jsonReader);
             }
         }
     }
