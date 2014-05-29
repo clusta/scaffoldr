@@ -17,7 +17,7 @@ namespace ScaffoldR.Providers
         private string bucketName;
         private RegionEndpoint region;
 
-        public async Task SaveAsync(Stream inputStream, string path)
+        public async Task SaveAsync(Stream inputStream, string path, string contentType)
         {
             inputStream.Position = 0;
 
@@ -29,7 +29,8 @@ namespace ScaffoldR.Providers
                     BucketName = bucketName,
                     Key = path,
                     CannedACL = S3CannedACL.PublicRead,
-                    InputStream = inputStream
+                    InputStream = inputStream,
+                    ContentType = contentType
                 };
 
                 await transferUtility.UploadAsync(transferRequest);

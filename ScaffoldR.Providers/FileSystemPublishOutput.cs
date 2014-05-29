@@ -11,7 +11,7 @@ namespace ScaffoldR.Providers
     {
         private string basePath;
         
-        public async Task SaveAsync(Stream inputStream, string path)
+        public async Task SaveAsync(Stream inputStream, string path, string contentType)
         {
             var absolutePath = Path.Combine(basePath, path);
 

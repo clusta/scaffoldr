@@ -9,6 +9,6 @@ namespace ScaffoldR
 {
     public interface IPublishOutput
     {
-        Task SaveAsync(Stream inputStream, string path);
+        Task SaveAsync(Stream inputStream, string path, string contentType);
     }
 }

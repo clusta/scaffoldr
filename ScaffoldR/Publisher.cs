@@ -143,7 +143,7 @@ namespace ScaffoldR
 
                     using (var inputStream = new MemoryStream(Encoding.UTF8.GetBytes(stringOutput))) 
                     {
-                        await output.SaveAsync(inputStream, page.Slug);
+                        await output.SaveAsync(inputStream, page.Slug, "text/html");
                     }
 
                     // publish images
@@ -151,7 +151,7 @@ namespace ScaffoldR
                     {
                         using (var inputStream = await source.OpenStreamAsync(media.Source))
                         {
-                            await output.SaveAsync(inputStream, media.Uri);
+                            await output.SaveAsync(inputStream, media.Uri, mediaContentTypes[GetExtension(media.Uri)]);
                         }
                     }
 
