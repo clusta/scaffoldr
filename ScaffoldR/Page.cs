@@ -14,44 +14,38 @@ namespace ScaffoldR
         public IDictionary<string, object> Datasources { get; set; }
         public Media Thumbnail { get; set; }
 
-        public string AllContent
+        public string GetAllContent()
         {
-            get
+            if (Sections == null)
             {
-                if (Sections == null)
-                {
-                    return string.Empty;
-                }
-                
-                var content = Sections
-                    .Where(s => s.Value != null)
-                    .Select(s => s.Value.Content)
-                    .ToArray();
-                
-                return string.Concat(content);
+                return string.Empty;
             }
+                
+            var content = Sections
+                .Where(s => s.Value != null)
+                .Select(s => s.Value.Content)
+                .ToArray();
+                
+            return string.Concat(content);
         }
 
-        public IEnumerable<Media> AllMedia
+        public IEnumerable<Media> GetAllMedia()
         {
-            get
+            var media = new List<Media>();
+
+            if (Sections != null)
             {
-                var media = new List<Media>();
-
-                if (Sections != null)
-                {
-                    media.AddRange(Sections
-                        .Where(s => s.Value.Media != null)
-                        .SelectMany(s => s.Value.Media));
-                }
-
-                if (Thumbnail != null)
-                {
-                    media.Add(Thumbnail);
-                }
-
-                return media;
+                media.AddRange(Sections
+                    .Where(s => s.Value.Media != null)
+                    .SelectMany(s => s.Value.Media));
             }
+
+            if (Thumbnail != null)
+            {
+                media.Add(Thumbnail);
+            }
+
+            return media;
         }
     }
 }

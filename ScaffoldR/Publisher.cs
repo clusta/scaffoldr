@@ -147,7 +147,7 @@ namespace ScaffoldR
                     }
 
                     // publish images
-                    foreach (var media in page.AllMedia)
+                    foreach (var media in page.GetAllMedia())
                     {
                         using (var inputStream = await source.OpenStreamAsync(media.Source))
                         {
