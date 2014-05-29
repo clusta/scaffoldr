@@ -43,6 +43,10 @@ namespace ScaffoldR
         public async Task<Page<TMetadata>> ParsePageAsync<TMetadata>(string path)
         {
             var files = await source.GetPageSourcesAsync(path);
+
+            // ensure alpha-numeric order
+            files = files.OrderBy(f => f).ToList();
+
             var slug = GetSlug(path);
             var page = new Page<TMetadata>()
             {
