@@ -300,21 +300,23 @@ namespace ScaffoldR
             return string.Format("{0}-{1}", pageSlug, GetFileName(imagePath));
         }
 
-        public Publisher(IPublishSource source, 
+        public Publisher(
+            IPublishSource source, 
             IPublishOutput output, 
+            IPublishLog log,
+            IPublishIndex indexer,
             IYamlDeserializer yaml, 
             IJsonDeserializer json, 
-            ICsvDeserializer csv, 
-            IPublishIndex indexer, 
-            IPublishLog logger)
+            ICsvDeserializer csv 
+            )
         {
             this.source = source;
             this.output = output;
+            this.logger = log;
+            this.indexer = indexer;
             this.yaml = yaml;
             this.json = json;
             this.csv = csv;
-            this.indexer = indexer;
-            this.logger = logger;
         }
     }
 }
