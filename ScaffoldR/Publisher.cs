@@ -101,26 +101,35 @@ namespace ScaffoldR
             return page;
         }
 
-        public Task PublishContainerAsync(string path, ITextTemplate template)
+        public Task PublishContainerAsync(string path, ITextTemplate template, IDictionary<string, object> datasources = null)
         {
-            return PublishContainerAsync<Metadata>(path, template);
+            return PublishContainerAsync<Metadata>(path, template, datasources);
         }
 
-        public async Task PublishContainerAsync<TMetadata>(string containerName, ITextTemplate template)
+        public async Task PublishContainerAsync<TMetadata>(string containerName, ITextTemplate template, IDictionary<string, object> datasources = null)
         {
             var folders = await source.GetPagesAsync(containerName);
 
-            Dictionary<string, object> datasources;
+            Dictionary<string, object> data;
 
             try
             {
-                datasources = await GetDatasourcesAsync(containerName);
+                data = await GetDatasourcesAsync(containerName) 
+                    ?? new Dictionary<string, object>();
             }
             catch
             {
                 Log("Error: failed to parse datasources");
                 
                 return;
+            }
+
+            if (datasources != null)
+            {
+                data = datasources
+                        .Concat(data)
+                        .GroupBy(d => d.Key)
+                        .ToDictionary(d => d.Key, d => d.First().Value); // if duplicate, passed in value takes precidence
             }
 
             Page<TMetadata> page = null;
@@ -131,7 +140,7 @@ namespace ScaffoldR
                 {
                     page = await ParsePageAsync<TMetadata>(folder);
 
-                    page.Datasources = datasources;
+                    page.Datasources = data;
                 }
                 catch
                 {
