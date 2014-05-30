@@ -19,20 +19,20 @@ namespace ScaffoldR
 
         private static IDictionary<string, string> mediaContentTypes = new Dictionary<string, string>()
         {
-            { "jpg", "image/jpg" },
-            { "png", "image/png" }
+            { "jpg", Constants.ContentType.Jpg },
+            { "png", Constants.ContentType.Png }
         };
 
         private static IDictionary<string, string> sectionContentTypes = new Dictionary<string, string>()
         {
-            { "html", "text/html" },
-            { "md", "text/x-markdown" }
+            { "html", Constants.ContentType.Html },
+            { "md", Constants.ContentType.Markdown }
         };
 
         private static IDictionary<string, string> metadataContentTypes = new Dictionary<string, string>()
         {
-            { "yaml", "text/x-yaml" },
-	        { "json", "application/json" }
+            { "yaml", Constants.ContentType.Yaml },
+	        { "json", Constants.ContentType.Json }
         };
 
         public Task<Page<Metadata>> ParsePageAsync(string path)
@@ -147,7 +147,7 @@ namespace ScaffoldR
 
                     using (var inputStream = new MemoryStream(Encoding.UTF8.GetBytes(stringOutput))) 
                     {
-                        await output.SaveAsync(inputStream, page.Slug, "text/html");
+                        await output.SaveAsync(inputStream, page.Slug, Constants.ContentType.Html);
                     }
 
                     // publish images
@@ -307,8 +307,7 @@ namespace ScaffoldR
             IPublishIndex indexer,
             IYamlDeserializer yaml, 
             IJsonDeserializer json, 
-            ICsvDeserializer csv 
-            )
+            ICsvDeserializer csv)
         {
             this.source = source;
             this.output = output;
