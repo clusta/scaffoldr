@@ -174,7 +174,7 @@ namespace ScaffoldR
                 {
                     try
                     {
-                        await indexer.AddOrUpdate(page);
+                        await indexer.AddOrUpdate(containerName, page);
                     }
                     catch
                     {

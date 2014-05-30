@@ -8,6 +8,6 @@ namespace ScaffoldR
 {
     public interface IPublishIndex
     {
-        Task AddOrUpdate(object page);
+        Task AddOrUpdate(string containerName, object page);
     }
 }
