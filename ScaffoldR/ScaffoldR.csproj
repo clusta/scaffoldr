@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Constants.cs" />
+    <Compile Include="Contract.cs" />
     <Compile Include="ICsvDeserializer.cs" />
     <Compile Include="IPublishIndex.cs" />
     <Compile Include="IJsonDeserializer.cs" />

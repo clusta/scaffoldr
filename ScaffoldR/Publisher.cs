@@ -118,7 +118,7 @@ namespace ScaffoldR
             }
             catch
             {
-                logger.Log("Error: failed to parse datasources");
+                Log("Error: failed to parse datasources");
                 
                 return;
             }
@@ -135,35 +135,39 @@ namespace ScaffoldR
                 }
                 catch
                 {
-                    logger.Log(string.Format("Error: failed to parse page '{0}'", folder));
+                    Log("Error: failed to parse page '{0}'", folder);
 
                     continue; // skip publish and index, continue processing other pages
                 }
 
-                try
+                // can pass null template or output, to index only
+                if (output != null && template != null)
                 {
-                    // publish page
-                    var stringOutput = template.RenderTemplate(page);
-
-                    using (var inputStream = new MemoryStream(Encoding.UTF8.GetBytes(stringOutput))) 
+                    try
                     {
-                        await output.SaveAsync(inputStream, page.Slug, Constants.ContentType.Html);
-                    }
+                        // publish page
+                        var stringOutput = template.RenderTemplate(page);
 
-                    // publish images
-                    foreach (var media in page.GetAllMedia())
-                    {
-                        using (var inputStream = await source.OpenStreamAsync(media.Source))
+                        using (var inputStream = new MemoryStream(Encoding.UTF8.GetBytes(stringOutput))) 
                         {
-                            await output.SaveAsync(inputStream, media.Uri, mediaContentTypes[GetExtension(media.Uri)]);
+                            await output.SaveAsync(inputStream, page.Slug, Constants.ContentType.Html);
                         }
-                    }
 
-                    logger.Log(string.Format("Success: published '{0}'", folder));
-                }
-                catch
-                {
-                    logger.Log(string.Format("Error: failed to publish page '{0}'", folder));
+                        // publish images
+                        foreach (var media in page.GetAllMedia())
+                        {
+                            using (var inputStream = await source.OpenStreamAsync(media.Source))
+                            {
+                                await output.SaveAsync(inputStream, media.Uri, mediaContentTypes[GetExtension(media.Uri)]);
+                            }
+                        }
+
+                        Log("Success: published '{0}'", folder);
+                    }
+                    catch
+                    {
+                        Log("Error: failed to publish page '{0}'", folder);
+                    }
                 }
 
                 if (indexer != null)
@@ -174,9 +178,17 @@ namespace ScaffoldR
                     }
                     catch
                     {
-                        logger.Log(string.Format("Error: failed to index page '{0}'", folder));
+                        Log("Error: failed to index page '{0}'", folder);
                     }
                 }
+            }
+        }
+
+        private void Log(string formatString, params object[] values) 
+        {
+            if (logger != null)
+            {
+                logger.Log(string.Format(formatString, values));
             }
         }
 
@@ -309,6 +321,8 @@ namespace ScaffoldR
             IJsonDeserializer json, 
             ICsvDeserializer csv)
         {
+            Contract.NotNull(source, "source");
+            
             this.source = source;
             this.output = output;
             this.logger = log;
