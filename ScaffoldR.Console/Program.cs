@@ -1,4 +1,5 @@
-﻿using ScaffoldR.Providers;
+﻿using Newtonsoft.Json;
+using ScaffoldR.Providers;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -18,24 +19,40 @@ namespace ScaffoldR.Console
             {
                 try
                 {
-                    var output = GetPublishOutput(options.Output, options.AccessKey, options.SecretKey);
-                    var publisher = new Publisher(
-                        new FileSystemPublishSource(options.Input),
-                        output,
-                        new ConsolePublishLog(),
-                        null,
-                        new YamlDotNetDeserializer(),
-                        new JsonNetDeserializer(),
-                        new FileHelpersCsvDeserializer(null));
+                    Options[] batch;
+                    
+                    if (Path.GetExtension(options.InputPath) == ".json")
+                    {
+                        var jsonString = File.ReadAllText(options.InputPath);
+                        
+                        batch = JsonConvert.DeserializeObject<Options[]>(jsonString);
+                    }
+                    else
+                    {
+                        batch = new Options[] { options };
+                    }
 
-                    var textTemplate = GetTextTemplate(options.Template);
-                    var publishTask = publisher.PublishContainerAsync(options.ContainerName, textTemplate);
+                    foreach (var o in batch)
+                    {
+                        var output = GetPublishOutput(o.OutputPath, o.AccessKey, o.SecretKey);
+                        var publisher = new Publisher(
+                            new FileSystemPublishSource(o.InputPath),
+                            output,
+                            new ConsolePublishLog(),
+                            null,
+                            new YamlDotNetDeserializer(),
+                            new JsonNetDeserializer(),
+                            new FileHelpersCsvDeserializer(null));
 
-                    Task.WaitAll(publishTask);
+                        var textTemplate = GetTextTemplate(o.TemplatePath);
+                        var publishTask = publisher.PublishContainerAsync(o.ContainerName, textTemplate);
+
+                        Task.WaitAll(publishTask);
+                    }
                 }
                 catch(Exception e)
                 {
-                    WriteOutput("Error during publish '{0}'", e.Message);
+                    WriteOutput("Error during publish '{0}'", e.InnerException != null ? e.InnerException.Message : e.Message);
                 }
             }
             else
