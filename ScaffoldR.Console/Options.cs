@@ -20,5 +20,11 @@ namespace ScaffoldR.Console
 
         [Option('t', "template", Required = true, HelpText = "Template path")]
         public string Template { get; set; }
+
+        [Option('a', "accessKey", Required = false, HelpText = "Access key")]
+        public string AccessKey { get; set; }
+
+        [Option('s', "secretKey", Required = false, HelpText = "Secret key")]
+        public string SecretKey { get; set; }
     }
 }

@@ -37,12 +37,12 @@ namespace ScaffoldR.Providers
             }
         }
 
-        public AmazonS3PublishOuput(string accessKey, string secretKey, RegionEndpoint region, string bucketName)
+        public AmazonS3PublishOuput(string accessKey, string secretKey, string bucketName, RegionEndpoint region = null)
         {
             this.accessKey = accessKey;
             this.secretKey = secretKey;
             this.bucketName = bucketName;
-            this.region = region;
+            this.region = region ?? RegionEndpoint.EUWest1;
         }
     }
 }
