@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScaffoldR", "ScaffoldR\Scaf
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScaffoldR.Providers", "ScaffoldR.Providers\ScaffoldR.Providers.csproj", "{F0AB0835-0126-4C3B-9CA7-5BBC3E610F7E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScaffoldR.Console", "ScaffoldR.Console\ScaffoldR.Console.csproj", "{5EB91807-8653-4523-874F-6DFA05D184AE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{F0AB0835-0126-4C3B-9CA7-5BBC3E610F7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F0AB0835-0126-4C3B-9CA7-5BBC3E610F7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F0AB0835-0126-4C3B-9CA7-5BBC3E610F7E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5EB91807-8653-4523-874F-6DFA05D184AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5EB91807-8653-4523-874F-6DFA05D184AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5EB91807-8653-4523-874F-6DFA05D184AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5EB91807-8653-4523-874F-6DFA05D184AE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
