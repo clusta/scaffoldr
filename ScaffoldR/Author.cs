@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace ScaffoldR
 {
-    public interface ICsvDeserializer
+    public class Author
     {
-        object[] Deserialize(string key, Stream inputStream);
+        public string Name { get; set; }
+        public string Picture { get; set; }
     }
 }

@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 
 namespace ScaffoldR
 {
-    public interface IYamlDeserializer
+    public interface IFileDestination
     {
-        T Deserialize<T>(Stream inputStream);
+        Task SaveAsync(string path, string contentType, Stream inputStream);
     }
 }

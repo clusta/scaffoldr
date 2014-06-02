@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace ScaffoldR
 {
-    public interface IPublishIndex
+    public interface ILogger
     {
-        Task AddOrUpdate(string containerName, object page);
+        void Log(string message);
     }
 }

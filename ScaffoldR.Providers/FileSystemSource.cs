@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace ScaffoldR.Providers
 {
-    public class FileSystemPublishSource : IPublishSource
+    public class FileSystemSource : IFileSource
     {
         private string basePath;
         
-        public Task<IEnumerable<string>> GetPagesAsync(string containerName)
+        public Task<IEnumerable<string>> GetFoldersAsync(string containerName)
         {
             var path = Path.Combine(basePath, containerName);
             var folders = Directory.EnumerateDirectories(path);
@@ -19,7 +19,7 @@ namespace ScaffoldR.Providers
             return Task.FromResult(folders);
         }
 
-        public Task<IEnumerable<string>> GetPageSourcesAsync(string path)
+        public Task<IEnumerable<string>> GetFilesAsync(string path)
         {
             var finalPath = Path.IsPathRooted(path) ? path : Path.Combine(basePath, path);
             var files = Directory.EnumerateFiles(finalPath);
@@ -34,7 +34,7 @@ namespace ScaffoldR.Providers
             return Task.FromResult(fileStream);
         }
 
-        public FileSystemPublishSource(string basePath)
+        public FileSystemSource(string basePath)
         {
             this.basePath = basePath;
         }

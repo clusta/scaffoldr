@@ -10,10 +10,12 @@ namespace ScaffoldR.Providers
 {
     public class RemoteTextTemplate : ITextTemplate
     {
-        private string uri;
+        private Uri baseAddress;
         
-        public string RenderTemplate(object page)
+        public string RenderTemplate(string path, object page)
         {
+            var uri = new Uri(baseAddress, path);
+            
             using (var httpClient = new HttpClient())
             {
                 var httpResponse = httpClient.PostAsJsonAsync(uri, page).Result;
@@ -29,9 +31,9 @@ namespace ScaffoldR.Providers
             }
         }
 
-        public RemoteTextTemplate(string uri)
+        public RemoteTextTemplate(string baseAddress)
         {
-            this.uri = uri;
+            this.baseAddress = new Uri(baseAddress);
         }
     }
 }

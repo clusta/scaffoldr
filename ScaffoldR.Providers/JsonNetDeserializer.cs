@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace ScaffoldR.Providers
 {
-    public class JsonNetDeserializer : IJsonDeserializer
+    public class JsonNetDeserializer : IDeserializer
     {
         public T Deserialize<T>(Stream inputStream)
         {

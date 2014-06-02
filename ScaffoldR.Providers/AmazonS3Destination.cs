@@ -10,18 +10,17 @@ using System.Threading.Tasks;
 
 namespace ScaffoldR.Providers
 {
-    public class AmazonS3PublishOuput : IPublishOutput
+    public class AmazonS3Destination : IFileDestination
     {
         private string accessKey;
         private string secretKey;
         private string bucketName;
-        private RegionEndpoint region;
 
-        public async Task SaveAsync(Stream inputStream, string path, string contentType)
+        public async Task SaveAsync(string path, string contentType, Stream inputStream)
         {
-            inputStream.Position = 0;
+            inputStream.Seek(0, SeekOrigin.Begin);
 
-            using (var client = AWSClientFactory.CreateAmazonS3Client(accessKey, secretKey, region))
+            using (var client = AWSClientFactory.CreateAmazonS3Client(accessKey, secretKey))
             {
                 var transferUtility = new TransferUtility(client);
                 var transferRequest = new TransferUtilityUploadRequest
@@ -37,12 +36,11 @@ namespace ScaffoldR.Providers
             }
         }
 
-        public AmazonS3PublishOuput(string accessKey, string secretKey, string bucketName, RegionEndpoint region = null)
+        public AmazonS3Destination(string accessKey, string secretKey, string bucketName)
         {
             this.accessKey = accessKey;
             this.secretKey = secretKey;
             this.bucketName = bucketName;
-            this.region = region ?? RegionEndpoint.EUWest1;
         }
     }
 }

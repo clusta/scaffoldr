@@ -16,6 +16,7 @@ namespace ScaffoldR
             public const string Png = "image/png";
             public const string Json = "application/json";
             public const string Yaml = "text/x-yaml";
+            public const string Csv = "text/csv";
         }
     }
 }

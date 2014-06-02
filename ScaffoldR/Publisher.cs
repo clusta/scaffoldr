@@ -9,13 +9,7 @@ namespace ScaffoldR
 {
     public class Publisher
     {
-        private IPublishSource source;
-        private IPublishOutput output;
-        private IYamlDeserializer yaml;
-        private IJsonDeserializer json;
-        private ICsvDeserializer csv;
-        private IPublishIndex indexer;
-        private IPublishLog logger;
+        private IContainer container;
 
         private static IDictionary<string, string> mediaContentTypes = new Dictionary<string, string>()
         {
@@ -35,14 +29,9 @@ namespace ScaffoldR
 	        { "json", Constants.ContentType.Json }
         };
 
-        public Task<Page<Metadata>> ParsePageAsync(string path)
+        public async Task<Page<TMetadata>> ParsePageAsync<TMetadata>(IFileSource source, string path)
         {
-            return ParsePageAsync<Metadata>(path);
-        }
-
-        public async Task<Page<TMetadata>> ParsePageAsync<TMetadata>(string path)
-        {
-            var files = await source.GetPageSourcesAsync(path);
+            var files = await source.GetFilesAsync(path);
 
             // ensure alpha-numeric order
             files = files.OrderBy(f => f).ToList();
@@ -69,7 +58,7 @@ namespace ScaffoldR
 
             if (metaDataPath != null) 
             {
-                page.Metadata = await ParseMetadataAsync<TMetadata>(metaDataPath);
+                page.Metadata = await ParseMetadataAsync<TMetadata>(source, metaDataPath);
             }
 
             page.Sections = files
@@ -95,99 +84,50 @@ namespace ScaffoldR
 
             foreach (var section in page.Sections.Values.Where(s => !string.IsNullOrEmpty(s.Source)))
             {
-                section.Content = await ReadFileAsStringAsync(section.Source);
+                section.Content = await ReadFileAsStringAsync(source, section.Source);
             }
 
             return page;
         }
 
-        public Task PublishContainerAsync(string path, ITextTemplate template, IDictionary<string, object> datasources = null)
+        public async void RunPublish<TMetadata>(Publish[] tasks)
         {
-            return PublishContainerAsync<Metadata>(path, template, datasources);
-        }
-
-        public async Task PublishContainerAsync<TMetadata>(string containerName, ITextTemplate template, IDictionary<string, object> datasources = null)
-        {
-            var folders = await source.GetPagesAsync(containerName);
-
-            Dictionary<string, object> data;
-
-            try
+            var indexer = container.ResolveIndexer();
+            
+            foreach (var publish in tasks)
             {
-                data = await GetDatasourcesAsync(containerName) 
-                    ?? new Dictionary<string, object>();
-            }
-            catch
-            {
-                Log("Error: failed to parse datasources");
-                
-                return;
-            }
+                var fileSource = container.ResolveFileSource(publish.Source.BaseAddress);
+                var fileDestination = container.ResolveFileDestination(publish.Destination.BaseAddress, publish.Destination.AccessKey, publish.Destination.SecretKey);
+                var template = container.ResolveTemplate(publish.Template.BaseAddress);
+                var folders = await fileSource.GetFoldersAsync(publish.Source.ContentPath);
+                var datasources = await GetDatasourcesAsync(fileSource, publish.Source.DataPath);
 
-            if (datasources != null)
-            {
-                data = datasources
+                foreach (var folder in folders)
+                {
+                    var page = await ParsePageAsync<TMetadata>(fileSource, folder);
+                    var data = await indexer.Index(publish.Kind, page);
+
+                    // merge data from data folder and indexer, indexer values take precidence
+                    page.Data = datasources
                         .Concat(data)
                         .GroupBy(d => d.Key)
-                        .ToDictionary(d => d.Key, d => d.First().Value); // if duplicate, passed in value takes precidence
-            }
+                        .ToDictionary(d => d.Key, d => d.First().Value);
 
-            Page<TMetadata> page = null;
+                    var stringOutput = template.RenderTemplate(publish.Template.TemplatePath, page);
 
-            foreach (var folder in folders)
-            {
-                try
-                {
-                    page = await ParsePageAsync<TMetadata>(folder);
-
-                    page.Datasources = data;
-                }
-                catch
-                {
-                    Log("Error: failed to parse page '{0}'", folder);
-
-                    continue; // skip publish and index, continue processing other pages
-                }
-
-                // can pass null template or output, to index only
-                if (output != null && template != null)
-                {
-                    try
+                    // publish page
+                    using (var inputStream = new MemoryStream(Encoding.UTF8.GetBytes(stringOutput)))
                     {
-                        // publish page
-                        var stringOutput = template.RenderTemplate(page);
+                        await fileDestination.SaveAsync(page.Slug, publish.Destination.ContentType, inputStream);
+                    }
 
-                        using (var inputStream = new MemoryStream(Encoding.UTF8.GetBytes(stringOutput))) 
+                    // publish media
+                    foreach (var media in page.GetAllMedia())
+                    {
+                        using (var inputStream = await fileSource.OpenStreamAsync(media.Source))
                         {
-                            await output.SaveAsync(inputStream, page.Slug, Constants.ContentType.Html);
+                            await fileDestination.SaveAsync(media.Uri, mediaContentTypes[GetExtension(media.Uri)], inputStream);
                         }
-
-                        // publish images
-                        foreach (var media in page.GetAllMedia())
-                        {
-                            using (var inputStream = await source.OpenStreamAsync(media.Source))
-                            {
-                                await output.SaveAsync(inputStream, media.Uri, mediaContentTypes[GetExtension(media.Uri)]);
-                            }
-                        }
-
-                        Log("Success: published '{0}'", folder);
-                    }
-                    catch
-                    {
-                        Log("Error: failed to publish page '{0}'", folder);
-                    }
-                }
-
-                if (indexer != null)
-                {
-                    try
-                    {
-                        await indexer.AddOrUpdate(containerName, page);
-                    }
-                    catch
-                    {
-                        Log("Error: failed to index page '{0}'", folder);
                     }
                 }
             }
@@ -195,16 +135,13 @@ namespace ScaffoldR
 
         private void Log(string formatString, params object[] values) 
         {
-            if (logger != null)
-            {
-                logger.Log(string.Format(formatString, values));
-            }
+            container.ResolveLogger().Log(string.Format(formatString, values));
         }
 
-        public async Task<Dictionary<string, object>> GetDatasourcesAsync(string containerName)
+        public async Task<Dictionary<string, object>> GetDatasourcesAsync(IFileSource source, string containerName)
         {
             var datasources = new Dictionary<string, object>();
-            var files = await source.GetPageSourcesAsync(containerName); 
+            var files = await source.GetFilesAsync(containerName); 
             var csv = files
                 .Where(f => GetExtension(f) == "csv")
                 .ToList();
@@ -213,7 +150,7 @@ namespace ScaffoldR
             {
                 var key = GetFileNameWithoutExtension(file);
 
-                datasources.Add(key, await ParseCsvAsync(key, file));
+                datasources.Add(key, await ParseCsvAsync(source, key, file));
             }
 
             return datasources;
@@ -224,7 +161,7 @@ namespace ScaffoldR
             return Path.GetFileName(path);
         }
 
-        private async Task<string> ReadFileAsStringAsync(string path)
+        private async Task<string> ReadFileAsStringAsync(IFileSource source, string path)
         {
             using (var inputStream = await source.OpenStreamAsync(path))
             using (var streamReader = new StreamReader(inputStream))
@@ -233,29 +170,26 @@ namespace ScaffoldR
             }
         }
 
-        private async Task<TMetadata> ParseMetadataAsync<TMetadata>(string path)
+        private async Task<TMetadata> ParseMetadataAsync<TMetadata>(IFileSource source, string path)
         {
             var extension = GetExtension(path);
+            var name = Path.GetFileNameWithoutExtension(path);
 
             using (var inputStream = await source.OpenStreamAsync(path))
             {
-                switch (extension)
-                {
-                    case "yaml":
-                        return yaml.Deserialize<TMetadata>(inputStream);
-                    case "json":
-                        return json.Deserialize<TMetadata>(inputStream);
-                    default:
-                        return default(TMetadata);
-                }
+                return container
+                        .ResolveDeserializer(name, metadataContentTypes[extension])
+                        .Deserialize<TMetadata>(inputStream);
             }
         }
 
-        private async Task<object[]> ParseCsvAsync(string key, string path)
+        private async Task<object[]> ParseCsvAsync(IFileSource source, string key, string path)
         {
             using (var inputStream = await source.OpenStreamAsync(path))
             {
-                return csv.Deserialize(key, inputStream);
+                return container
+                        .ResolveDataReader(key, Constants.ContentType.Csv)
+                        .ReadData(inputStream);
             }
         }
 
@@ -321,24 +255,11 @@ namespace ScaffoldR
             return string.Format("{0}-{1}", pageSlug, GetFileName(imagePath));
         }
 
-        public Publisher(
-            IPublishSource source, 
-            IPublishOutput output, 
-            IPublishLog log,
-            IPublishIndex indexer,
-            IYamlDeserializer yaml, 
-            IJsonDeserializer json, 
-            ICsvDeserializer csv)
+        public Publisher(IContainer container)
         {
-            Contract.NotNull(source, "source");
-            
-            this.source = source;
-            this.output = output;
-            this.logger = log;
-            this.indexer = indexer;
-            this.yaml = yaml;
-            this.json = json;
-            this.csv = csv;
+            Contract.NotNull(container, "container");
+
+            this.container = container;
         }
     }
 }

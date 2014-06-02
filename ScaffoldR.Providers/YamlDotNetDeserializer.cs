@@ -9,7 +9,7 @@ using YamlDotNet.Serialization.NamingConventions;
 
 namespace ScaffoldR.Providers
 {
-    public class YamlDotNetDeserializer : IYamlDeserializer
+    public class YamlDotNetDeserializer : IDeserializer
     {
         public T Deserialize<T>(Stream inputStream)
         {

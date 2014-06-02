@@ -9,6 +9,6 @@ namespace ScaffoldR
 {
     public interface ITextTemplate
     {
-        string RenderTemplate(object page);
+        string RenderTemplate(string path, object model);
     }
 }

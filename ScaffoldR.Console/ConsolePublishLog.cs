@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ScaffoldR.Console
 {
-    public class ConsolePublishLog : IPublishLog
+    public class ConsolePublishLog : ILogger
     {
         public void Log(string message)
         {

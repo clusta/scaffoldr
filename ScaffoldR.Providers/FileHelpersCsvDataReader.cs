@@ -9,23 +9,23 @@ using System.Threading.Tasks;
 
 namespace ScaffoldR.Providers
 {
-    public class FileHelpersCsvDeserializer : ICsvDeserializer
+    public class FileHelpersCsvDataReader : IDataReader
     {
-        private IDictionary<string, Type> typeMappings;
+        private Type type;
         
-        public object[] Deserialize(string key, Stream inputStream)
+        public object[] ReadData(Stream inputStream)
         {
             using (var textReader = new StreamReader(inputStream))
             {
-                var fileHelper = new FileHelperEngine(typeMappings[key]);
+                var fileHelper = new FileHelperEngine(type);
 
                 return fileHelper.ReadStream(textReader);
             }
         }
 
-        public FileHelpersCsvDeserializer(IDictionary<string, Type> typeMappings)
+        public FileHelpersCsvDataReader(Type type)
         {
-            this.typeMappings = typeMappings;
+            this.type = type;
         }
     }
 }

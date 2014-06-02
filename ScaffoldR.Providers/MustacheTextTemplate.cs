@@ -10,18 +10,23 @@ namespace ScaffoldR.Providers
 {
     public class MustacheTextTemplate : ITextTemplate
     {
+        private string basePath;
         private Generator generator;
 
-        public string RenderTemplate(object page)
+        public string RenderTemplate(string path, object page)
         {
+            var absolutePath = Path.Combine(basePath, path);
+            var templateString = File.ReadAllText(absolutePath);
+            var compiler = new FormatCompiler();
+
+            generator = compiler.Compile(templateString);            
+            
             return generator.Render(page);
         }
 
-        public MustacheTextTemplate(string template) 
+        public MustacheTextTemplate(string basePath) 
         {
-            var compiler = new FormatCompiler();
-
-            generator = compiler.Compile(template);
+            this.basePath = basePath;
         }
     }
 }

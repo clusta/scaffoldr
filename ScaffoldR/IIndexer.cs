@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace ScaffoldR
 {
-    public interface IPublishOutput
+    public interface IIndexer
     {
-        Task SaveAsync(Stream inputStream, string path, string contentType);
+        Task<IDictionary<string, object>> Index(string kind, object model);
     }
 }

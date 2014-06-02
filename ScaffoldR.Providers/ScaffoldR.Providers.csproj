@@ -78,11 +78,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AmazonS3PublishOutput.cs" />
-    <Compile Include="FileHelpersCsvDeserializer.cs" />
+    <Compile Include="AmazonS3Destination.cs" />
+    <Compile Include="FileHelpersCsvDataReader.cs" />
     <Compile Include="DebugPublishLog.cs" />
-    <Compile Include="FileSystemPublishOutput.cs" />
-    <Compile Include="FileSystemPublishSource.cs" />
+    <Compile Include="FileSystemDestination.cs" />
+    <Compile Include="FileSystemSource.cs" />
     <Compile Include="JsonNetDeserializer.cs" />
     <Compile Include="MustacheTextTemplate.cs" />
     <Compile Include="RemoteTextTemplate.cs" />

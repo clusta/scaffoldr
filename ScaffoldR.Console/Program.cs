@@ -19,36 +19,37 @@ namespace ScaffoldR.Console
             {
                 try
                 {
-                    Options[] batch;
+                    // TODO: convert to new Publisher format with IContainer
+                    //Options[] batch;
                     
-                    if (Path.GetExtension(options.InputPath) == ".json")
-                    {
-                        var jsonString = File.ReadAllText(options.InputPath);
+                    //if (Path.GetExtension(options.InputPath) == ".json")
+                    //{
+                    //    var jsonString = File.ReadAllText(options.InputPath);
                         
-                        batch = JsonConvert.DeserializeObject<Options[]>(jsonString);
-                    }
-                    else
-                    {
-                        batch = new Options[] { options };
-                    }
+                    //    batch = JsonConvert.DeserializeObject<Options[]>(jsonString);
+                    //}
+                    //else
+                    //{
+                    //    batch = new Options[] { options };
+                    //}
 
-                    foreach (var o in batch)
-                    {
-                        var output = GetPublishOutput(o.OutputPath, o.AccessKey, o.SecretKey);
-                        var publisher = new Publisher(
-                            new FileSystemPublishSource(o.InputPath),
-                            output,
-                            new ConsolePublishLog(),
-                            null,
-                            new YamlDotNetDeserializer(),
-                            new JsonNetDeserializer(),
-                            new FileHelpersCsvDeserializer(null));
+                    //foreach (var o in batch)
+                    //{
+                    //    var output = GetPublishOutput(o.OutputPath, o.AccessKey, o.SecretKey);
+                    //    var publisher = new Publisher(
+                    //        new FileSystemSource(o.InputPath),
+                    //        output,
+                    //        new ConsolePublishLog(),
+                    //        null,
+                    //        new YamlDotNetDeserializer(),
+                    //        new JsonNetDeserializer(),
+                    //        new FileHelpersCsvDeserializer(null));
 
-                        var textTemplate = GetTextTemplate(o.TemplatePath);
-                        var publishTask = publisher.PublishContainerAsync(o.ContainerName, textTemplate);
+                    //    var textTemplate = GetTextTemplate(o.TemplatePath);
+                    //    var publishTask = publisher.PublishContainerAsync(o.ContainerName, textTemplate);
 
-                        Task.WaitAll(publishTask);
-                    }
+                    //    Task.WaitAll(publishTask);
+                    //}
                 }
                 catch(Exception e)
                 {
@@ -93,15 +94,15 @@ namespace ScaffoldR.Console
 
         private const string s3Prefix = "arn:aws:s3:::";
 
-        private static IPublishOutput GetPublishOutput(string path, string accessKey, string secretKey)
+        private static IFileDestination GetPublishOutput(string path, string accessKey, string secretKey)
         {
             if (path.StartsWith(s3Prefix))
             {
-                return new AmazonS3PublishOuput(accessKey, secretKey, path.Substring(s3Prefix.Length));
+                return new AmazonS3Destination(accessKey, secretKey, path.Substring(s3Prefix.Length));
             }
             else
             {
-                return new FileSystemPublishOutput(path);
+                return new FileSystemDestination(path);
             }
         }
     }

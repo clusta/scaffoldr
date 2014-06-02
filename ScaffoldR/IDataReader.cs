@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 
 namespace ScaffoldR
 {
-    public interface IJsonDeserializer
+    public interface IDataReader
     {
-        T Deserialize<T>(Stream inputStream);
+        object[] ReadData(Stream inputStream);
     }
 }

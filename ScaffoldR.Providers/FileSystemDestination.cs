@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace ScaffoldR.Providers
 {
-    public class FileSystemPublishOutput : IPublishOutput
+    public class FileSystemDestination : IFileDestination
     {
         private string basePath;
         
-        public async Task SaveAsync(Stream inputStream, string path, string contentType)
+        public async Task SaveAsync(string path, string contentType, Stream inputStream)
         {
             var absolutePath = Path.Combine(basePath, path);
 
@@ -21,7 +21,7 @@ namespace ScaffoldR.Providers
             }
         }
 
-        public FileSystemPublishOutput(string basePath)
+        public FileSystemDestination(string basePath)
         {
             this.basePath = basePath;
         }
