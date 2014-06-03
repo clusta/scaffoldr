@@ -24,6 +24,7 @@ namespace ScaffoldR.Providers
                 entry.Title = page.Metadata.Title;
                 entry.Description = page.Metadata.Description;
                 entry.Timestamp = page.Metadata.Published;
+                entry.Tags = page.Metadata.Tags;
             }
 
             if (page.Thumbnail != null)

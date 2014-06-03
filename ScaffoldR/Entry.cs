@@ -14,5 +14,6 @@ namespace ScaffoldR
         public string Description { get; set; }
         public string Thumbnail { get; set; }
         public string Uri { get; set; }
+        public string[] Tags { get; set; }
     }
 }
