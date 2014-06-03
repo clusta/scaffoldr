@@ -16,11 +16,15 @@ namespace ScaffoldR.Providers
             var entry = new Entry()
             {
                 Kind = page.Kind,
-                Uri = page.Slug,
-                Title = page.Metadata.Title,
-                Description = page.Metadata.Description,
-                Timestamp = page.Metadata.Published
+                Uri = page.Slug
             };
+
+            if (page.Metadata != null)
+            {
+                entry.Title = page.Metadata.Title;
+                entry.Description = page.Metadata.Description;
+                entry.Timestamp = page.Metadata.Published;
+            }
 
             if (page.Thumbnail != null)
             {

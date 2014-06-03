@@ -19,9 +19,10 @@ namespace ScaffoldR.Console
             {
                 try
                 {
+                    var logger = new ConsoleLogger();
                     var jsonString = File.ReadAllText(options.BatchPath);
                     var batch = JsonConvert.DeserializeObject<Job[]>(jsonString);
-                    var container = new DefaultContainer(null);
+                    var container = new DefaultContainer(null, logger);
                     var publisher = new StaticSite(container);
                     var task = publisher.PublishAsync<Metadata>(batch);
 
@@ -29,7 +30,7 @@ namespace ScaffoldR.Console
                 }
                 catch(Exception e)
                 {
-                    WriteOutput("Error during publish '{0}'", e.InnerException.Message);
+                    WriteOutput("Error during publish '{0}' '{1}'", e.InnerException.Message, e.InnerException.StackTrace);
                 }
             }
             else
