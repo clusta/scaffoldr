@@ -91,11 +91,14 @@ namespace ScaffoldR.Providers
 
         public DefaultContainer(IIndexer indexer, ILogger logger, IDictionary<string, Type> mappings)
         {
-            Contract.NotNull(indexer, "indexer");
-            
             this.indexer = indexer;
             this.logger = logger;
             this.mappings = mappings;
+        }
+
+        public DefaultContainer()
+        {
+
         }
     }
 }

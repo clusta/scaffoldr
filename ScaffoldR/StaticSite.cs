@@ -108,13 +108,21 @@ namespace ScaffoldR
                     try
                     {
                         var page = await ParsePageAsync<TMetadata>(fileSource, folder, publish.Kind);
-                        var data = await indexer.Index(page);
 
-                        // merge data from data folder and indexer, indexer values take precidence
-                        page.Data = datasources
-                            .Concat(data)
-                            .GroupBy(d => d.Key)
-                            .ToDictionary(d => d.Key, d => d.First().Value);
+                        if (indexer != null)
+                        {
+                            var data = await indexer.Index(page);
+
+                            // merge data from data folder and indexer, indexer values take precidence
+                            page.Data = datasources
+                                .Concat(data)
+                                .GroupBy(d => d.Key)
+                                .ToDictionary(d => d.Key, d => d.First().Value);
+                        }
+                        else
+                        {
+                            page.Data = datasources;
+                        }
 
                         var stringOutput = template.RenderTemplate(page);
 
