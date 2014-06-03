@@ -62,15 +62,19 @@ namespace ScaffoldR.Providers
                 && (new Uri(uri).Scheme == Uri.UriSchemeHttp || new Uri(uri).Scheme == Uri.UriSchemeHttps);
         }
 
-        public ITextTemplate ResolveTemplate(string baseAddress)
+        public ITextTemplate ResolveTemplate(string path)
         {
-            if (IsUri(baseAddress))
+            if (IsUri(path))
             {
-                return new RemoteTextTemplate(baseAddress);
+                return new RemoteTextTemplate(path);
+            }
+            else if(Path.GetExtension(path) == ".cshtml")
+            {
+                return new RazorTextTemplate(path);
             }
             else
             {
-                return new MustacheTextTemplate(baseAddress);
+                return new MustacheTextTemplate(path);
             }
         }
 

@@ -12,7 +12,7 @@ namespace ScaffoldR
         IFileDestination ResolveFileDestination(string baseAddress, string bucketName, string accessKey, string secretKey);
         IDeserializer ResolveDeserializer(string name, string contentType);
         IDataReader ResolveDataReader(string name, string contentType);
-        ITextTemplate ResolveTemplate(string baseAddress);
+        ITextTemplate ResolveTemplate(string path);
         ILogger ResolveLogger();
         IIndexer ResolveIndexer();
     }

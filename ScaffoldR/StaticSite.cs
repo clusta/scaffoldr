@@ -99,7 +99,7 @@ namespace ScaffoldR
             {
                 var fileSource = container.ResolveFileSource(publish.Source.BaseAddress);
                 var fileDestination = container.ResolveFileDestination(publish.Destination.BaseAddress, publish.Destination.BucketName, publish.Destination.AccessKey, publish.Destination.SecretKey);
-                var template = container.ResolveTemplate(publish.Template.BaseAddress);
+                var template = container.ResolveTemplate(publish.Template.TemplatePath);
                 var folders = await fileSource.GetFoldersAsync(publish.Source.ContentPath);
                 var datasources = await GetDatasourcesAsync(fileSource, publish.Source.DataPath);
 
@@ -116,7 +116,7 @@ namespace ScaffoldR
                             .GroupBy(d => d.Key)
                             .ToDictionary(d => d.Key, d => d.First().Value);
 
-                        var stringOutput = template.RenderTemplate(publish.Template.TemplatePath, page);
+                        var stringOutput = template.RenderTemplate(page);
 
                         // publish page
                         using (var inputStream = new MemoryStream(Encoding.UTF8.GetBytes(stringOutput)))
