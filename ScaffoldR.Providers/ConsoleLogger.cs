@@ -4,13 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ScaffoldR.Console
+namespace ScaffoldR.Providers
 {
     public class ConsoleLogger : ILogger
     {
         public void Log(string message)
         {
-            System.Console.WriteLine(message);
+            Console.WriteLine(message);
         }
     }
 }

@@ -86,6 +86,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AmazonS3Destination.cs" />
+    <Compile Include="ConsoleLogger.cs" />
     <Compile Include="DefaultContainer.cs" />
     <Compile Include="DefaultIndexer.cs" />
     <Compile Include="FileHelpersDataReader.cs" />

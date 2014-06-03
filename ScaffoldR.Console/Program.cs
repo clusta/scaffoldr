@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using CommandLine;
+using Newtonsoft.Json;
 using ScaffoldR.Providers;
 using System;
 using System.Collections.Generic;
@@ -13,40 +14,36 @@ namespace ScaffoldR.Console
     {
         static void Main(string[] args)
         {
+            var logger = new ConsoleLogger();
             var options = new Options();
 
-            if (TryParseArguments(args, options))
+            if (Parser.Default.ParseArguments(args, options))
             {
                 try
                 {
-                    var logger = new ConsoleLogger();
-                    var jsonString = File.ReadAllText(options.BatchPath);
-                    var batch = JsonConvert.DeserializeObject<Job[]>(jsonString);
+                    var json = File.ReadAllText(options.BatchPath);
+                    var jobs = JsonConvert.DeserializeObject<Job[]>(json);
                     var container = new DefaultContainer(null, logger);
-                    var publisher = new StaticSite(container);
-                    var task = publisher.PublishAsync<Metadata>(batch);
+                    var staticSite = new StaticSite(container);
+                    var publish = staticSite.PublishAsync<Metadata>(jobs);
 
-                    Task.WaitAll(task);
+                    Task.WaitAll(publish);
                 }
                 catch(Exception e)
                 {
-                    WriteOutput("Error during publish '{0}' '{1}'", e.InnerException.Message, e.InnerException.StackTrace);
+                    logger.Log(string.Format("Error during publish '{0}'", e.InnerException.Message));
                 }
             }
             else
             {
-                WriteOutput("Unable to parse arguments");
+                logger.Log("Unable to parse arguments");
             }
         }
 
-        private static bool TryParseArguments(string[] args, Options options)
+        class Options
         {
-            return CommandLine.Parser.Default.ParseArguments(args, options);
-        }
-
-        private static void WriteOutput(string formatString, params object[] values)
-        {
-            System.Console.WriteLine(formatString, values);
-        }
+            [Option('b', "batch", Required = true, HelpText = "Batch file path")]
+            public string BatchPath { get; set; }
+        }        
     }
 }
