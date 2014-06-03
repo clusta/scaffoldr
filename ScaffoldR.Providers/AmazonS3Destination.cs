@@ -44,6 +44,11 @@ namespace ScaffoldR.Providers
 
         public AmazonS3Destination(string serviceUrl, string bucketName, string accessKey, string secretKey)
         {
+            Contract.NotNull(serviceUrl, "serviceUrl");
+            Contract.NotNull(bucketName, "bucketName");
+            Contract.NotNull(accessKey, "accessKey");
+            Contract.NotNull(secretKey, "secretKey");
+            
             this.serviceUrl = serviceUrl;
             this.bucketName = bucketName;
             this.accessKey = accessKey;

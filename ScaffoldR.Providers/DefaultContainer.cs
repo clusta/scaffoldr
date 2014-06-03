@@ -10,6 +10,7 @@ namespace ScaffoldR.Providers
     public class DefaultContainer : IContainer
     {
         private IDictionary<string, Type> mappings;
+        private IIndexer indexer;
         private ILogger logger;
         
         public IFileSource ResolveFileSource(string baseAddress)
@@ -85,13 +86,16 @@ namespace ScaffoldR.Providers
 
         public IIndexer ResolveIndexer()
         {
-            return new DefaultIndexer();
+            return indexer;
         }
 
-        public DefaultContainer(IDictionary<string, Type> mappings, ILogger logger)
+        public DefaultContainer(IIndexer indexer, ILogger logger, IDictionary<string, Type> mappings)
         {
-            this.mappings = mappings;
+            Contract.NotNull(indexer, "indexer");
+            
+            this.indexer = indexer;
             this.logger = logger;
+            this.mappings = mappings;
         }
     }
 }

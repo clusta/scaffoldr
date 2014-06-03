@@ -53,7 +53,7 @@ namespace ScaffoldR
             };
 
             var metaDataPath = files
-                    .Where(f => GetFileNameWithoutExtension(f) == "metadata" && IsMetaData(f))
+                    .Where(f => GetFileNameWithoutExtension(f) == "metadata" && IsMetadata(f))
                     .Select(f => f)
                     .FirstOrDefault();
 
@@ -145,7 +145,12 @@ namespace ScaffoldR
 
         private void Log(string formatString, params object[] values) 
         {
-            container.ResolveLogger().Log(string.Format(formatString, values));
+            var logger = container.ResolveLogger();
+
+            if (logger != null)
+            {
+                logger.Log(string.Format(formatString, values));
+            }
         }
 
         public async Task<Dictionary<string, object>> GetDatasourcesAsync(IFileSource source, string containerName)
@@ -249,7 +254,7 @@ namespace ScaffoldR
             return sectionContentTypes.ContainsKey(GetExtension(path));
         }
 
-        private bool IsMetaData(string path)
+        private bool IsMetadata(string path)
         {
             return metadataContentTypes.ContainsKey(GetExtension(path));
         }

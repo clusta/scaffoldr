@@ -25,6 +25,8 @@ namespace ScaffoldR.Providers
 
         public FileHelpersDataReader(Type type)
         {
+            Contract.NotNull(type, "type");
+            
             this.type = type;
         }
     }

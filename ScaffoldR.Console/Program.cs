@@ -21,9 +21,10 @@ namespace ScaffoldR.Console
             {
                 try
                 {
+                    var indexer = new DefaultIndexer();
                     var json = File.ReadAllText(options.BatchPath);
                     var jobs = JsonConvert.DeserializeObject<Job[]>(json);
-                    var container = new DefaultContainer(null, logger);
+                    var container = new DefaultContainer(indexer, logger, null);
                     var staticSite = new StaticSite(container);
                     var publish = staticSite.PublishAsync<Metadata>(jobs);
 
