@@ -12,6 +12,9 @@ namespace ScaffoldR
         [JsonProperty("base_address")]
         public string BaseAddress { get; set; }
 
+        [JsonProperty("bucket_name")]
+        public string BucketName { get; set; }
+
         [JsonProperty("access_key")]
         public string AccessKey { get; set; }
 

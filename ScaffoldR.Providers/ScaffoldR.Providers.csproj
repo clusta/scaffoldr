@@ -79,8 +79,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AmazonS3Destination.cs" />
-    <Compile Include="FileHelpersCsvDataReader.cs" />
-    <Compile Include="DebugPublishLog.cs" />
+    <Compile Include="DefaultContainer.cs" />
+    <Compile Include="DefaultIndexer.cs" />
+    <Compile Include="FileHelpersDataReader.cs" />
+    <Compile Include="DebugLogger.cs" />
     <Compile Include="FileSystemDestination.cs" />
     <Compile Include="FileSystemSource.cs" />
     <Compile Include="JsonNetDeserializer.cs" />

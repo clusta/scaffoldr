@@ -8,6 +8,7 @@ namespace ScaffoldR
 {
     public class Page<TMetadata>
     {
+        public string Kind { get; set; }
         public string Slug { get; set; }
         public TMetadata Metadata { get; set; }
         public IDictionary<string, Section> Sections { get; set; }

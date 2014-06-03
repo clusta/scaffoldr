@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ScaffoldR
 {
-    public class Publisher
+    public class StaticSite
     {
         private IContainer container;
 
@@ -29,7 +29,7 @@ namespace ScaffoldR
 	        { "json", Constants.ContentType.Json }
         };
 
-        public async Task<Page<TMetadata>> ParsePageAsync<TMetadata>(IFileSource source, string path)
+        public async Task<Page<TMetadata>> ParsePageAsync<TMetadata>(IFileSource source, string path, string kind)
         {
             var files = await source.GetFilesAsync(path);
 
@@ -39,6 +39,7 @@ namespace ScaffoldR
             var slug = GetSlug(path);
             var page = new Page<TMetadata>()
             {
+                Kind = kind,
                 Slug = slug,
                 Thumbnail = files
                     .Where(f => IsMedia(f) && GetFileNameWithoutExtension(f) == "thumbnail")
@@ -90,44 +91,53 @@ namespace ScaffoldR
             return page;
         }
 
-        public async void RunPublish<TMetadata>(Publish[] tasks)
+        public async Task PublishAsync<TMetadata>(Job[] tasks)
         {
             var indexer = container.ResolveIndexer();
             
             foreach (var publish in tasks)
             {
                 var fileSource = container.ResolveFileSource(publish.Source.BaseAddress);
-                var fileDestination = container.ResolveFileDestination(publish.Destination.BaseAddress, publish.Destination.AccessKey, publish.Destination.SecretKey);
+                var fileDestination = container.ResolveFileDestination(publish.Destination.BaseAddress, publish.Destination.BucketName, publish.Destination.AccessKey, publish.Destination.SecretKey);
                 var template = container.ResolveTemplate(publish.Template.BaseAddress);
                 var folders = await fileSource.GetFoldersAsync(publish.Source.ContentPath);
                 var datasources = await GetDatasourcesAsync(fileSource, publish.Source.DataPath);
 
                 foreach (var folder in folders)
                 {
-                    var page = await ParsePageAsync<TMetadata>(fileSource, folder);
-                    var data = await indexer.Index(publish.Kind, page);
-
-                    // merge data from data folder and indexer, indexer values take precidence
-                    page.Data = datasources
-                        .Concat(data)
-                        .GroupBy(d => d.Key)
-                        .ToDictionary(d => d.Key, d => d.First().Value);
-
-                    var stringOutput = template.RenderTemplate(publish.Template.TemplatePath, page);
-
-                    // publish page
-                    using (var inputStream = new MemoryStream(Encoding.UTF8.GetBytes(stringOutput)))
+                    try
                     {
-                        await fileDestination.SaveAsync(page.Slug, publish.Destination.ContentType, inputStream);
-                    }
+                        var page = await ParsePageAsync<TMetadata>(fileSource, folder, publish.Kind);
+                        var data = await indexer.Index(page);
 
-                    // publish media
-                    foreach (var media in page.GetAllMedia())
-                    {
-                        using (var inputStream = await fileSource.OpenStreamAsync(media.Source))
+                        // merge data from data folder and indexer, indexer values take precidence
+                        page.Data = datasources
+                            .Concat(data)
+                            .GroupBy(d => d.Key)
+                            .ToDictionary(d => d.Key, d => d.First().Value);
+
+                        var stringOutput = template.RenderTemplate(publish.Template.TemplatePath, page);
+
+                        // publish page
+                        using (var inputStream = new MemoryStream(Encoding.UTF8.GetBytes(stringOutput)))
                         {
-                            await fileDestination.SaveAsync(media.Uri, mediaContentTypes[GetExtension(media.Uri)], inputStream);
+                            await fileDestination.SaveAsync(page.Slug, publish.Destination.ContentType, inputStream);
                         }
+
+                        // publish media
+                        foreach (var media in page.GetAllMedia())
+                        {
+                            using (var inputStream = await fileSource.OpenStreamAsync(media.Source))
+                            {
+                                await fileDestination.SaveAsync(media.Uri, mediaContentTypes[GetExtension(media.Uri)], inputStream);
+                            }
+                        }                        
+                        
+                        Log("Success: publishing '{0}'", folder);
+                    }
+                    catch(Exception e)
+                    {
+                        Log("Error: publishing '{0}' message '{1}'", folder, e.Message);
                     }
                 }
             }
@@ -255,7 +265,7 @@ namespace ScaffoldR
             return string.Format("{0}-{1}", pageSlug, GetFileName(imagePath));
         }
 
-        public Publisher(IContainer container)
+        public StaticSite(IContainer container)
         {
             Contract.NotNull(container, "container");
 

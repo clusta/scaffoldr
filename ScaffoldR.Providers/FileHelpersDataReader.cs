@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace ScaffoldR.Providers
 {
-    public class FileHelpersCsvDataReader : IDataReader
+    public class FileHelpersDataReader : IDataReader
     {
         private Type type;
         
@@ -23,7 +23,7 @@ namespace ScaffoldR.Providers
             }
         }
 
-        public FileHelpersCsvDataReader(Type type)
+        public FileHelpersDataReader(Type type)
         {
             this.type = type;
         }

@@ -19,41 +19,17 @@ namespace ScaffoldR.Console
             {
                 try
                 {
-                    // TODO: convert to new Publisher format with IContainer
-                    //Options[] batch;
-                    
-                    //if (Path.GetExtension(options.InputPath) == ".json")
-                    //{
-                    //    var jsonString = File.ReadAllText(options.InputPath);
-                        
-                    //    batch = JsonConvert.DeserializeObject<Options[]>(jsonString);
-                    //}
-                    //else
-                    //{
-                    //    batch = new Options[] { options };
-                    //}
+                    var jsonString = File.ReadAllText(options.BatchPath);
+                    var batch = JsonConvert.DeserializeObject<Job[]>(jsonString);
+                    var container = new DefaultContainer(null);
+                    var publisher = new StaticSite(container);
+                    var task = publisher.PublishAsync<Metadata>(batch);
 
-                    //foreach (var o in batch)
-                    //{
-                    //    var output = GetPublishOutput(o.OutputPath, o.AccessKey, o.SecretKey);
-                    //    var publisher = new Publisher(
-                    //        new FileSystemSource(o.InputPath),
-                    //        output,
-                    //        new ConsolePublishLog(),
-                    //        null,
-                    //        new YamlDotNetDeserializer(),
-                    //        new JsonNetDeserializer(),
-                    //        new FileHelpersCsvDeserializer(null));
-
-                    //    var textTemplate = GetTextTemplate(o.TemplatePath);
-                    //    var publishTask = publisher.PublishContainerAsync(o.ContainerName, textTemplate);
-
-                    //    Task.WaitAll(publishTask);
-                    //}
+                    Task.WaitAll(task);
                 }
                 catch(Exception e)
                 {
-                    WriteOutput("Error during publish '{0}'", e.InnerException != null ? e.InnerException.Message : e.Message);
+                    WriteOutput("Error during publish '{0}'", e.InnerException.Message);
                 }
             }
             else
@@ -70,40 +46,6 @@ namespace ScaffoldR.Console
         private static void WriteOutput(string formatString, params object[] values)
         {
             System.Console.WriteLine(formatString, values);
-        }
-
-        private static ITextTemplate GetTextTemplate(string uri)
-        {
-            if (IsUri(uri))
-            {
-                return new RemoteTextTemplate(uri);
-            }
-            else
-            {
-                var templateSource = File.ReadAllText(uri);
-
-                return new MustacheTextTemplate(templateSource);
-            }
-        }
-
-        private static bool IsUri(string uri)
-        {
-            return Uri.IsWellFormedUriString(uri, UriKind.Absolute)
-                && (new Uri(uri).Scheme == Uri.UriSchemeHttp || new Uri(uri).Scheme == Uri.UriSchemeHttps);
-        }
-
-        private const string s3Prefix = "arn:aws:s3:::";
-
-        private static IFileDestination GetPublishOutput(string path, string accessKey, string secretKey)
-        {
-            if (path.StartsWith(s3Prefix))
-            {
-                return new AmazonS3Destination(accessKey, secretKey, path.Substring(s3Prefix.Length));
-            }
-            else
-            {
-                return new FileSystemDestination(path);
-            }
         }
     }
 }

@@ -8,6 +8,6 @@ namespace ScaffoldR
 {
     public interface IIndexer
     {
-        Task<IDictionary<string, object>> Index(string kind, object model);
+        Task<IDictionary<string, object>> Index(object model);
     }
 }

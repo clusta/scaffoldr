@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ScaffoldR
 {
-    public class Publish
+    public class Job
     {
         [JsonProperty("kind")]
         public string Kind { get; set; }
