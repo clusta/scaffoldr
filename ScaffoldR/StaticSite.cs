@@ -83,9 +83,51 @@ namespace ScaffoldR
                         .ToList()
                 });
 
+            // read html files
             foreach (var section in page.Sections.Values.Where(s => !string.IsNullOrEmpty(s.Source)))
             {
                 section.Content = await ReadFileAsStringAsync(source, section.Source);
+            }
+
+            // add section metadata
+            foreach (var sectionName in page.Sections.Keys)
+            {
+                var sectionMetadataFile = files
+                    .Where(f => GetFileNameWithoutExtension(f) == sectionName && IsMetadata(f))
+                    .Select(f => f)
+                    .FirstOrDefault();
+
+                if (sectionMetadataFile != null)
+                {
+                    var sectionMetadata = await ParseMetadataAsync<Section>(source, sectionMetadataFile);
+                    var section = page.Sections[sectionName];
+
+                    // merge sections
+                    section.Title = sectionMetadata.Title;
+                    section.Description = sectionMetadata.Description;
+
+                    if (sectionMetadata.Media != null) 
+                    {
+                        section.Media = section.Media
+                            .Zip(sectionMetadata.Media, (m1, m2) =>
+                            {
+                                if (m2 != null && m1 != null)
+                                {
+                                    m2.Source = m1.Source;
+                                    m2.Uri = m1.Uri;
+                                    m2.ContentType = m1.ContentType;
+
+                                    return m2;
+                                }
+                                else
+                                {
+                                    return m1 ?? m2;
+                                }
+                            })
+                            .ToList();
+                    }
+
+                }
             }
 
             return page;
@@ -161,10 +203,10 @@ namespace ScaffoldR
             }
         }
 
-        public async Task<Dictionary<string, object>> GetDatasourcesAsync(IFileSource source, string containerName)
+        public async Task<Dictionary<string, object>> GetDatasourcesAsync(IFileSource source, string path)
         {
             var datasources = new Dictionary<string, object>();
-            var files = await source.GetFilesAsync(containerName); 
+            var files = await source.GetFilesAsync(path); 
             var csv = files
                 .Where(f => GetExtension(f) == "csv")
                 .ToList();

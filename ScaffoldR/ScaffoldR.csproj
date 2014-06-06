@@ -42,7 +42,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Annotation.cs" />
     <Compile Include="Author.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Contract.cs" />

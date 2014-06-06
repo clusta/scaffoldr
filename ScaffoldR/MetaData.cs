@@ -29,8 +29,5 @@ namespace ScaffoldR
 
         [JsonProperty("source")]
         public string Source { get; set; }
-
-        [JsonProperty("annotations")]
-        public Annotation[] Annotations { get; set; }
     }
 }
