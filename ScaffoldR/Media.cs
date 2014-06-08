@@ -13,6 +13,7 @@ namespace ScaffoldR
         public string ContentType { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
+        public Video Video { get; set; }
         public Action Action { get; set; }
     }
 }

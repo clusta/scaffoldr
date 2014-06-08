@@ -64,6 +64,7 @@
     <Compile Include="Section.cs" />
     <Compile Include="StaticSite.cs" />
     <Compile Include="Template.cs" />
+    <Compile Include="Video.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
