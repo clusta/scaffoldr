@@ -52,10 +52,7 @@ namespace ScaffoldR
                     .FirstOrDefault()
             };
 
-            var metaDataPath = files
-                    .Where(f => GetFileNameWithoutExtension(f) == "metadata" && IsMetadata(f))
-                    .Select(f => f)
-                    .FirstOrDefault();
+            var metaDataPath = GetMetadataPath(files, "metadata");
 
             if (metaDataPath != null) 
             {
@@ -92,10 +89,7 @@ namespace ScaffoldR
             // add section metadata
             foreach (var sectionName in page.Sections.Keys)
             {
-                var sectionMetadataFile = files
-                    .Where(f => GetFileNameWithoutExtension(f) == sectionName && IsMetadata(f))
-                    .Select(f => f)
-                    .FirstOrDefault();
+                var sectionMetadataFile = GetMetadataPath(files, sectionName);
 
                 if (sectionMetadataFile != null)
                 {
@@ -108,29 +102,33 @@ namespace ScaffoldR
 
                     if (sectionMetadata.Media != null) 
                     {
-                        section.Media = section.Media
-                            .Zip(sectionMetadata.Media, (m1, m2) =>
-                            {
-                                if (m2 != null && m1 != null)
-                                {
-                                    m2.Source = m1.Source;
-                                    m2.Uri = m1.Uri;
-                                    m2.ContentType = m1.ContentType;
-
-                                    return m2;
-                                }
-                                else
-                                {
-                                    return m1 ?? m2;
-                                }
-                            })
-                            .ToList();
+                        section.Media = MergeMediaLists(section.Media, sectionMetadata.Media);
                     }
-
                 }
             }
 
             return page;
+        }
+
+        private IList<Media> MergeMediaLists(IList<Media> mediaWithSources, IList<Media> mediaWithMetadata)
+        {
+            return mediaWithSources
+                    .Zip(mediaWithMetadata, (mediaItemWithSource, mediaItemWithMetadata) =>
+                    {
+                        if (mediaItemWithMetadata != null && mediaItemWithSource != null)
+                        {
+                            mediaItemWithMetadata.Source = mediaItemWithSource.Source;
+                            mediaItemWithMetadata.Uri = mediaItemWithSource.Uri;
+                            mediaItemWithMetadata.ContentType = mediaItemWithSource.ContentType;
+
+                            return mediaItemWithMetadata;
+                        }
+                        else
+                        {
+                            return mediaItemWithSource ?? mediaItemWithMetadata;
+                        }
+                    })
+                    .ToList();
         }
 
         public async Task PublishAsync<TMetadata>(Job[] tasks)
@@ -318,6 +316,14 @@ namespace ScaffoldR
         private string RewriteImagePath(string pageSlug, string imagePath)
         {
             return string.Format("{0}-{1}", pageSlug, GetFileName(imagePath));
+        }
+
+        private string GetMetadataPath(IEnumerable<string> files, string fileNameWithoutExtension)
+        {
+            return files
+                    .Where(f => GetFileNameWithoutExtension(f) == fileNameWithoutExtension && IsMetadata(f))
+                    .Select(f => f)
+                    .FirstOrDefault();
         }
 
         public StaticSite(IContainer container)
