@@ -29,5 +29,8 @@ namespace ScaffoldR
 
         [JsonProperty("source")]
         public string Source { get; set; }
+
+        [JsonExtensionData]
+        public IDictionary<string, object> Extensions { get; set; }
     }
 }

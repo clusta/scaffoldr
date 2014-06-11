@@ -9,7 +9,10 @@ namespace ScaffoldR
 {
     public class Action
     {
+        [JsonProperty("uri")]
         public string Uri { get; set; }
+
+        [JsonProperty("text")]
         public string Text { get; set; }
     }
 }
