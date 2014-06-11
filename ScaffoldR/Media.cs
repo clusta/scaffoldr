@@ -29,5 +29,8 @@ namespace ScaffoldR
 
         [JsonProperty("action")]
         public Action Action { get; set; }
+
+        [JsonExtensionData]
+        public IDictionary<string, object> Extensions { get; set; }
     }
 }
