@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Validation;
 
 namespace ScaffoldR.Providers
 {
@@ -25,7 +26,7 @@ namespace ScaffoldR.Providers
 
         public FileHelpersDataReader(Type type)
         {
-            Contract.NotNull(type, "type");
+            Requires.NotNull(type, "type");
             
             this.type = type;
         }

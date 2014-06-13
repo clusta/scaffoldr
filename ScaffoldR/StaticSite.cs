@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Validation;
 
 namespace ScaffoldR
 {
@@ -328,7 +329,7 @@ namespace ScaffoldR
 
         public StaticSite(IContainer container)
         {
-            Contract.NotNull(container, "container");
+            Requires.NotNull(container, "container");
 
             this.container = container;
         }

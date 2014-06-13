@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Validation;
 
 namespace ScaffoldR.Providers
 {
@@ -44,10 +45,10 @@ namespace ScaffoldR.Providers
 
         public AmazonS3Destination(string serviceUrl, string bucketName, string accessKey, string secretKey)
         {
-            Contract.NotNull(serviceUrl, "serviceUrl");
-            Contract.NotNull(bucketName, "bucketName");
-            Contract.NotNull(accessKey, "accessKey");
-            Contract.NotNull(secretKey, "secretKey");
+            Requires.NotNull(serviceUrl, "serviceUrl");
+            Requires.NotNull(bucketName, "bucketName");
+            Requires.NotNull(accessKey, "accessKey");
+            Requires.NotNull(secretKey, "secretKey");
             
             this.serviceUrl = serviceUrl;
             this.bucketName = bucketName;

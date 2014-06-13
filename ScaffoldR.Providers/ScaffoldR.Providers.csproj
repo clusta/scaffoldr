@@ -80,6 +80,9 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="Validation">
+      <HintPath>..\packages\Validation.2.0.4.14103\lib\portable-windows8+net40+sl5+wp8+wpa81+wp81+MonoAndroid+MonoTouch\Validation.dll</HintPath>
+    </Reference>
     <Reference Include="YamlDotNet">
       <HintPath>..\packages\YamlDotNet.3.1.1\lib\net35\YamlDotNet.dll</HintPath>
     </Reference>
