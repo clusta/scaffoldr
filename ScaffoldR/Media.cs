@@ -24,6 +24,9 @@ namespace ScaffoldR
         [JsonProperty("description")]
         public string Description { get; set; }
 
+        [JsonProperty("author")]
+        public Video Author { get; set; }
+
         [JsonProperty("video")]
         public Video Video { get; set; }
 

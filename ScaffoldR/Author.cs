@@ -14,5 +14,8 @@ namespace ScaffoldR
 
         [JsonProperty("picture")]
         public string Picture { get; set; }
+
+        [JsonProperty("uri")]
+        public string Uri { get; set; }
     }
 }

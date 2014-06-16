@@ -12,7 +12,7 @@ namespace ScaffoldR
         [JsonProperty("uri")]
         public string Uri { get; set; }
 
-        [JsonProperty("duration")]
-        public int? Duration { get; set; }
+        [JsonProperty("embed")]
+        public string Embed { get; set; }
     }
 }
