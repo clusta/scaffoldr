@@ -27,9 +27,9 @@ namespace ScaffoldR.Providers
                 entry.Tags = page.Metadata.Tags;
             }
 
-            if (page.Thumbnail != null)
+            if (page.Thumbnail != null && page.Thumbnail.Sources != null && page.Thumbnail.Sources.Length > 0)
             {
-                entry.Thumbnail = page.Thumbnail.Uri;
+                entry.Thumbnail = page.Thumbnail.Sources[0].Uri;
             }
 
             entries.Add(entry);
