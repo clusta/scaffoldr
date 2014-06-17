@@ -29,5 +29,23 @@ namespace ScaffoldR
 
         [JsonExtensionData]
         public IDictionary<string, object> Extensions { get; set; }
+
+        public string GetSourceUri(params string[] prefered)
+        {
+            if (Sources == null)
+            {
+                return string.Empty;
+            }
+            
+            return
+                Sources
+                    .Where(s => prefered.Any(p => s.Variant.Equals(p, StringComparison.OrdinalIgnoreCase)))
+                    .Select(s => s.Uri)
+                    .FirstOrDefault() ??
+                Sources
+                    .Where(s => string.IsNullOrEmpty(s.Variant))
+                    .Select(s => s.Uri)
+                    .FirstOrDefault();
+        }
     }
 }
