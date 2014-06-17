@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ScaffoldR.Providers
 {
-    public class FileSystemSource : IFileSource
+    public class FileSystemInput : IFileInput
     {
         private string basePath;
         
@@ -34,7 +34,7 @@ namespace ScaffoldR.Providers
             return Task.FromResult(fileStream);
         }
 
-        public FileSystemSource(string basePath)
+        public FileSystemInput(string basePath)
         {
             this.basePath = basePath;
         }

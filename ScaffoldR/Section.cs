@@ -17,13 +17,15 @@ namespace ScaffoldR
         [JsonProperty("content")]
         public string Content { get; set; }
 
-        [JsonProperty("source")]
-        public string Source { get; set; }
-
         [JsonProperty("media")]
         public IList<Media> Media { get; set; }
 
         [JsonExtensionData]
         public IDictionary<string, object> Extensions { get; set; }
+
+        public Section()
+        {
+            Extensions = new Dictionary<string, object>();
+        }
     }
 }

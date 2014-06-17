@@ -18,5 +18,11 @@ namespace ScaffoldR
             public const string Yaml = "text/x-yaml";
             public const string Csv = "text/csv";
         }
+
+        public static class Resolution
+        {
+            public const string Standard = "1x";
+            public const string Retina = "2x";
+        }
     }
 }

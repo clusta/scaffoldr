@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ScaffoldR
 {
-    public interface IFileSource
+    public interface IFileInput
     {
         Task<IEnumerable<string>> GetFoldersAsync(string uri);
         Task<IEnumerable<string>> GetFilesAsync(string uri);

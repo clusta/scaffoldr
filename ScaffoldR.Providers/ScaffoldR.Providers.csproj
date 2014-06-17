@@ -88,14 +88,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AmazonS3Destination.cs" />
+    <Compile Include="AmazonS3Output.cs" />
     <Compile Include="ConsoleLogger.cs" />
     <Compile Include="DefaultContainer.cs" />
     <Compile Include="DefaultIndexer.cs" />
     <Compile Include="FileHelpersDataReader.cs" />
     <Compile Include="DebugLogger.cs" />
-    <Compile Include="FileSystemDestination.cs" />
-    <Compile Include="FileSystemSource.cs" />
+    <Compile Include="FileSystemOutput.cs" />
+    <Compile Include="FileSystemInput.cs" />
     <Compile Include="JsonNetDeserializer.cs" />
     <Compile Include="MustacheTextTemplate.cs" />
     <Compile Include="RazorTextTemplate.cs" />

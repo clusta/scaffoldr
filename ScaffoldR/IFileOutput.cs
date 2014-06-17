@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ScaffoldR
 {
-    public interface IFileDestination
+    public interface IFileOutput
     {
         Task SaveAsync(string path, string contentType, Stream inputStream);
     }

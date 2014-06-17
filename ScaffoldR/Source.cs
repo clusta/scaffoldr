@@ -9,13 +9,13 @@ namespace ScaffoldR
 {
     public class Source
     {
-        [JsonProperty("base_address")]
-        public string BaseAddress { get; set; }
+        [JsonProperty("uri")]
+        public string Uri { get; set; }
 
-        [JsonProperty("content_path")]
-        public string ContentPath { get; set; }
+        [JsonProperty("content_type")]
+        public string ContentType { get; set; }
 
-        [JsonProperty("data_path")]
-        public string DataPath { get; set; }
+        [JsonProperty("variant")]
+        public string Variant { get; set; }
     }
 }

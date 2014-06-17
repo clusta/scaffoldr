@@ -11,7 +11,7 @@ using Validation;
 
 namespace ScaffoldR.Providers
 {
-    public class AmazonS3Destination : IFileDestination
+    public class AmazonS3Output : IFileOutput
     {
         private string serviceUrl;
         private string accessKey;
@@ -43,7 +43,7 @@ namespace ScaffoldR.Providers
             }
         }
 
-        public AmazonS3Destination(string serviceUrl, string bucketName, string accessKey, string secretKey)
+        public AmazonS3Output(string serviceUrl, string bucketName, string accessKey, string secretKey)
         {
             Requires.NotNull(serviceUrl, "serviceUrl");
             Requires.NotNull(bucketName, "bucketName");

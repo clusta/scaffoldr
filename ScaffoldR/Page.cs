@@ -30,23 +30,26 @@ namespace ScaffoldR
             return string.Concat(content);
         }
 
-        public IEnumerable<Media> GetAllMedia()
+        public IEnumerable<Source> GetAllSources()
         {
-            var media = new List<Media>();
+            var sources = new List<Source>();
 
             if (Sections != null)
             {
-                media.AddRange(Sections
+                sources.AddRange(Sections
                     .Where(s => s.Value.Media != null)
-                    .SelectMany(s => s.Value.Media));
+                    .SelectMany(s => s.Value.Media)
+                    .Where(m => m.Sources != null && m.Sources.Any())
+                    .SelectMany(m => m.Sources)
+                    .ToList());
             }
 
-            if (Thumbnail != null)
+            if (Thumbnail != null && Thumbnail.Sources != null && Thumbnail.Sources.Any())
             {
-                media.Add(Thumbnail);
+                sources.AddRange(Thumbnail.Sources);
             }
 
-            return media;
+            return sources;
         }
     }
 }

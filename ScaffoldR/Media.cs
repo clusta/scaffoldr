@@ -9,14 +9,8 @@ namespace ScaffoldR
 {
     public class Media
     {
-        [JsonProperty("source")]
-        public string Source { get; set; }
-
-        [JsonProperty("uri")]
-        public string Uri { get; set; }
-
-        [JsonProperty("content_type")]
-        public string ContentType { get; set; }
+        [JsonProperty("sources")]
+        public IList<Source> Sources { get; set; }
 
         [JsonProperty("title")]
         public string Title { get; set; }

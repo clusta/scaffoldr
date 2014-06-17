@@ -30,82 +30,89 @@ namespace ScaffoldR
 	        { "json", Constants.ContentType.Json }
         };
 
-        public async Task<Page<TMetadata>> ParsePageAsync<TMetadata>(IFileSource source, string path, string kind)
+        public async Task<Page<TMetadata>> ParsePageAsync<TMetadata>(IFileInput source, string path, string kind)
         {
-            var files = await source.GetFilesAsync(path);
-
-            // ensure alpha-numeric order
-            files = files.OrderBy(f => f).ToList();
-
+            Func<InputFile, Source> mapFileToSource = f =>
+            {
+                return new Source()
+                {
+                    Uri = f.Path,
+                    ContentType = mediaContentTypes[f.Extension],
+                    Variant = f.Variant
+                };             
+            };
+            
+            var paths = await source.GetFilesAsync(path);
+            var files = paths.Select(p => new InputFile(p)).OrderBy(f => f.Section).ThenBy(f => f.Order);
             var slug = GetSlug(path);
             var page = new Page<TMetadata>()
             {
                 Kind = kind,
                 Slug = slug,
-                Thumbnail = files
-                    .Where(f => IsMedia(f) && GetFileNameWithoutExtension(f) == "thumbnail")
-                    .Select(f => new Media() 
-                    {
-                        Source = f,
-                        Uri = RewriteImagePath(slug, f),
-                        ContentType = mediaContentTypes[GetExtension(f)]
-                    })
-                    .FirstOrDefault()
+                Thumbnail = new Media() 
+                {
+                    Sources = files
+                        .Where(f => f.IsMedia && f.Section == "thumbnail")
+                        .Select(mapFileToSource)
+                        .ToArray()
+                },
+                Sections = new Dictionary<string, Section>()
             };
 
-            var metaDataPath = GetMetadataPath(files, "metadata");
+            var metaDataPath = files.Where(f => f.Section == "metadata").Select(f => f.Path).FirstOrDefault();
 
             if (metaDataPath != null) 
             {
                 page.Metadata = await ParseMetadataAsync<TMetadata>(source, metaDataPath);
             }
 
-            page.Sections = files
-                .Where(f => IsSectionName(f))
-                .OrderBy(f => GetSortOrder(f))
-                .GroupBy(f => GetSectionName(f))
-                .ToDictionary(g => g.Key, g => new Section()
-                {
-                    Source = g
-                        .Where(m => IsSection(m))
-                        .Select(m => m)
-                        .FirstOrDefault(),
-                    Media = g
-                        .Where(m => IsMedia(m))
-                        .Select(m => new Media()
-                        {
-                            Source = m,
-                            Uri = RewriteImagePath(page.Slug, m),
-                            ContentType = mediaContentTypes[GetExtension(m)]
-                        })
-                        .ToList()
-                });
+            var ignoreList = new string[] { "metadata", "thumbnail", "thumbs", "icon" };
 
-            // read html files
-            foreach (var section in page.Sections.Values.Where(s => !string.IsNullOrEmpty(s.Source)))
+            foreach (var sectionGroup in files.Where(s => !ignoreList.Contains(s.Section)).GroupBy(f => f.Section))
             {
-                section.Content = await ReadFileAsStringAsync(source, section.Source);
-            }
+                Section section;
 
-            // add section metadata
-            foreach (var sectionName in page.Sections.Keys)
-            {
-                var sectionMetadataFile = GetMetadataPath(files, sectionName);
+                // section metadata
+                var metadataPath = sectionGroup.Where(f => metadataContentTypes.ContainsKey(f.Extension)).Select(f => f.Path).FirstOrDefault();
 
-                if (sectionMetadataFile != null)
+                if (metadataPath != null)
                 {
-                    var sectionMetadata = await ParseMetadataAsync<Section>(source, sectionMetadataFile);
-                    var section = page.Sections[sectionName];
-
-                    // merge sections
-                    section.Title = sectionMetadata.Title;
-                    section.Description = sectionMetadata.Description;
-
-                    if (sectionMetadata.Media != null) 
-                    {
-                        section.Media = MergeMediaLists(section.Media, sectionMetadata.Media);
-                    }
+                    section = await ParseMetadataAsync<Section>(source, metadataPath);
                 }
+                else
+                {
+                    section = new Section();
+                }
+
+                // section html or markdown content
+                var contentExtenions = new string[] { "html", "htm", "md" };
+                var contentPath = sectionGroup.Where(f => contentExtenions.Contains(f.Extension)).Select(f => f.Path).FirstOrDefault();
+
+                if (contentPath != null)
+                {
+                    section.Content = await ReadFileAsStringAsync(source, contentPath);
+                }
+
+                // section media
+                var media = sectionGroup
+                        .Where(s => s.IsMedia)
+                        .GroupBy(s => s.Order)
+                        .Select(g => new Media()
+                        {
+                            Sources = g.Select(mapFileToSource).ToList()
+                        })
+                        .ToList();
+
+                if (section.Media != null)
+                {
+                    section.Media = MergeMediaLists(media, section.Media);
+                }
+                else
+                {
+                    section.Media = media;
+                }
+
+                page.Sections.Add(sectionGroup.Key, section);
             }
 
             return page;
@@ -116,11 +123,9 @@ namespace ScaffoldR
             return mediaWithSources
                     .Zip(mediaWithMetadata, (mediaItemWithSource, mediaItemWithMetadata) =>
                     {
-                        if (mediaItemWithMetadata != null && mediaItemWithSource != null)
+                        if (mediaItemWithMetadata != null && mediaItemWithSource != null && mediaItemWithSource.Sources != null && mediaItemWithSource.Sources.Any())
                         {
-                            mediaItemWithMetadata.Source = mediaItemWithSource.Source;
-                            mediaItemWithMetadata.Uri = mediaItemWithSource.Uri;
-                            mediaItemWithMetadata.ContentType = mediaItemWithSource.ContentType;
+                            mediaItemWithMetadata.Sources = mediaItemWithSource.Sources;
 
                             return mediaItemWithMetadata;
                         }
@@ -138,11 +143,11 @@ namespace ScaffoldR
             
             foreach (var publish in tasks)
             {
-                var fileSource = container.ResolveFileSource(publish.Source.BaseAddress);
-                var fileDestination = container.ResolveFileDestination(publish.Destination.BaseAddress, publish.Destination.BucketName, publish.Destination.AccessKey, publish.Destination.SecretKey);
-                var template = container.ResolveTemplate(publish.Template.TemplatePath);
-                var folders = await fileSource.GetFoldersAsync(publish.Source.ContentPath);
-                var datasources = await GetDatasourcesAsync(fileSource, publish.Source.DataPath);
+                var fileSource = container.ResolveFileInput(publish.Input.BaseAddress);
+                var fileDestination = container.ResolveFileOutput(publish.Output.BaseAddress, publish.Output.BucketName, publish.Output.AccessKey, publish.Output.SecretKey);
+                var template = container.ResolveTextTemplate(publish.Template.TemplatePath);
+                var folders = await fileSource.GetFoldersAsync(publish.Input.ContentPath);
+                var datasources = await GetDatasourcesAsync(fileSource, publish.Input.DataPath);
 
                 foreach (var folder in folders)
                 {
@@ -165,22 +170,26 @@ namespace ScaffoldR
                             page.Data = datasources;
                         }
 
+                        // publish media
+                        foreach (var source in page.GetAllSources())
+                        {
+                            var path = source.Uri;
+
+                            source.Uri = RewriteImagePath(page.Slug, path);
+                            
+                            using (var inputStream = await fileSource.OpenStreamAsync(path))
+                            {
+                                await fileDestination.SaveAsync(source.Uri, source.ContentType, inputStream);
+                            }
+                        } 
+
                         var stringOutput = template.RenderTemplate(page);
 
                         // publish page
                         using (var inputStream = new MemoryStream(Encoding.UTF8.GetBytes(stringOutput)))
                         {
-                            await fileDestination.SaveAsync(page.Slug, publish.Destination.ContentType, inputStream);
+                            await fileDestination.SaveAsync(page.Slug, publish.Output.ContentType, inputStream);
                         }
-
-                        // publish media
-                        foreach (var media in page.GetAllMedia())
-                        {
-                            using (var inputStream = await fileSource.OpenStreamAsync(media.Source))
-                            {
-                                await fileDestination.SaveAsync(media.Uri, mediaContentTypes[GetExtension(media.Uri)], inputStream);
-                            }
-                        }                        
                         
                         Log("Success: publishing '{0}'", folder);
                     }
@@ -202,7 +211,7 @@ namespace ScaffoldR
             }
         }
 
-        public async Task<Dictionary<string, object>> GetDatasourcesAsync(IFileSource source, string path)
+        public async Task<Dictionary<string, object>> GetDatasourcesAsync(IFileInput source, string path)
         {
             var datasources = new Dictionary<string, object>();
             var files = await source.GetFilesAsync(path); 
@@ -225,7 +234,7 @@ namespace ScaffoldR
             return Path.GetFileName(path);
         }
 
-        private async Task<string> ReadFileAsStringAsync(IFileSource source, string path)
+        private async Task<string> ReadFileAsStringAsync(IFileInput source, string path)
         {
             using (var inputStream = await source.OpenStreamAsync(path))
             using (var streamReader = new StreamReader(inputStream))
@@ -234,7 +243,7 @@ namespace ScaffoldR
             }
         }
 
-        private async Task<TMetadata> ParseMetadataAsync<TMetadata>(IFileSource source, string path)
+        private async Task<TMetadata> ParseMetadataAsync<TMetadata>(IFileInput source, string path)
         {
             var extension = GetExtension(path);
             var name = Path.GetFileNameWithoutExtension(path);
@@ -247,7 +256,7 @@ namespace ScaffoldR
             }
         }
 
-        private async Task<object[]> ParseCsvAsync(IFileSource source, string key, string path)
+        private async Task<object[]> ParseCsvAsync(IFileInput source, string key, string path)
         {
             using (var inputStream = await source.OpenStreamAsync(path))
             {
@@ -269,14 +278,6 @@ namespace ScaffoldR
                 .ToLower();
         }
 
-        private string GetSectionName(string path)
-        {
-            return Path.GetFileNameWithoutExtension(path)
-                .Split('-')
-                .Select(n => n.ToLower())
-                .First();
-        }
-
         private string GetExtension(string path)
         {
             return Path.GetExtension(path)
@@ -284,47 +285,20 @@ namespace ScaffoldR
                 .TrimStart('.');
         }
 
-        private string GetSortOrder(string path)
-        {
-            return Path.GetFileNameWithoutExtension(path)
-                .Split('-')
-                .Skip(1)
-                .Select(n => n.ToLower())
-                .FirstOrDefault();
-        }
-
-        private bool IsMedia(string path)
-        {
-            return mediaContentTypes.ContainsKey(GetExtension(path));
-        }
-
-        private bool IsSection(string path)
-        {
-            return sectionContentTypes.ContainsKey(GetExtension(path));
-        }
-
-        private bool IsMetadata(string path)
-        {
-            return metadataContentTypes.ContainsKey(GetExtension(path));
-        }
-
-        private bool IsSectionName(string path)
-        {
-            return !new string[] { "metadata", "thumbs", "thumbnail", "icon" }
-                .Contains(GetSectionName(path));
-        }
-
         private string RewriteImagePath(string pageSlug, string imagePath)
         {
-            return string.Format("{0}-{1}", pageSlug, GetFileName(imagePath));
-        }
-
-        private string GetMetadataPath(IEnumerable<string> files, string fileNameWithoutExtension)
-        {
-            return files
-                    .Where(f => GetFileNameWithoutExtension(f) == fileNameWithoutExtension && IsMetadata(f))
-                    .Select(f => f)
-                    .FirstOrDefault();
+            if (string.IsNullOrEmpty(pageSlug) && string.IsNullOrEmpty(imagePath))
+            {
+                return string.Empty;
+            }
+            else if (string.IsNullOrEmpty(pageSlug) && !string.IsNullOrEmpty(imagePath))
+            {
+                return Path.GetFileName(imagePath).ToLower();
+            }
+            else
+            {
+                return string.Format("{0}-{1}", pageSlug, Path.GetFileName(imagePath).ToLower());
+            }
         }
 
         public StaticSite(IContainer container)

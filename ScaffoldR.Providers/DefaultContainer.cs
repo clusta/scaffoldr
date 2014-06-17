@@ -13,20 +13,20 @@ namespace ScaffoldR.Providers
         private IIndexer indexer;
         private ILogger logger;
         
-        public IFileSource ResolveFileSource(string baseAddress)
+        public IFileInput ResolveFileInput(string baseAddress)
         {
-            return new FileSystemSource(baseAddress);
+            return new FileSystemInput(baseAddress);
         }
 
-        public IFileDestination ResolveFileDestination(string baseAddress, string bucketName, string accessKey, string secretKey)
+        public IFileOutput ResolveFileOutput(string baseAddress, string bucketName, string accessKey, string secretKey)
         {
             if (IsUri(baseAddress) && baseAddress.Contains(".amazonaws.com"))
             {
-                return new AmazonS3Destination(baseAddress, bucketName, accessKey, secretKey);
+                return new AmazonS3Output(baseAddress, bucketName, accessKey, secretKey);
             }
             else
             {
-                return new FileSystemDestination(baseAddress);
+                return new FileSystemOutput(baseAddress);
             }
         }
 
@@ -63,7 +63,7 @@ namespace ScaffoldR.Providers
                 && (new Uri(uri).Scheme == Uri.UriSchemeHttp || new Uri(uri).Scheme == Uri.UriSchemeHttps);
         }
 
-        public ITextTemplate ResolveTemplate(string path)
+        public ITextTemplate ResolveTextTemplate(string path)
         {
             if (IsUri(path))
             {

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ScaffoldR
 {
-    public class Destination
+    public class Output
     {
         [JsonProperty("base_address")]
         public string BaseAddress { get; set; }

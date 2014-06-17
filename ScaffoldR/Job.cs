@@ -12,13 +12,13 @@ namespace ScaffoldR
         [JsonProperty("kind")]
         public string Kind { get; set; }
 
-        [JsonProperty("source")]
-        public Source Source { get; set; }
+        [JsonProperty("input")]
+        public Input Input { get; set; }
 
         [JsonProperty("template")]
         public Template Template { get; set; }
 
-        [JsonProperty("destination")]
-        public Destination Destination { get; set; }
+        [JsonProperty("output")]
+        public Output Output { get; set; }
     }
 }

@@ -32,5 +32,10 @@ namespace ScaffoldR
 
         [JsonExtensionData]
         public IDictionary<string, object> Extensions { get; set; }
+
+        public Metadata() 
+        {
+            Extensions = new Dictionary<string, object>();
+        }
     }
 }
