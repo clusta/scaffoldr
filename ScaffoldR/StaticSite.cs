@@ -12,36 +12,18 @@ namespace ScaffoldR
     {
         private IContainer container;
 
-        private static IDictionary<string, string> mediaContentTypes = new Dictionary<string, string>()
+        private Func<InputFile, Source> mapFileToSource = f =>
         {
-            { "jpg", Constants.ContentType.Jpg },
-            { "png", Constants.ContentType.Png }
-        };
-
-        private static IDictionary<string, string> sectionContentTypes = new Dictionary<string, string>()
-        {
-            { "html", Constants.ContentType.Html },
-            { "md", Constants.ContentType.Markdown }
-        };
-
-        private static IDictionary<string, string> metadataContentTypes = new Dictionary<string, string>()
-        {
-            { "yaml", Constants.ContentType.Yaml },
-	        { "json", Constants.ContentType.Json }
+            return new Source()
+            {
+                Uri = f.Path,
+                ContentType = f.ContentType,
+                Variant = f.Variant
+            };
         };
 
         public async Task<Page<TMetadata>> ParsePageAsync<TMetadata>(IFileInput source, string path, string kind)
-        {
-            Func<InputFile, Source> mapFileToSource = f =>
-            {
-                return new Source()
-                {
-                    Uri = f.Path,
-                    ContentType = mediaContentTypes[f.Extension],
-                    Variant = f.Variant
-                };             
-            };
-            
+        {          
             var paths = await source.GetFilesAsync(path);
             var files = paths.Select(p => new InputFile(p)).OrderBy(f => f.Section).ThenBy(f => f.Order);
             var slug = GetSlug(path);
@@ -52,18 +34,18 @@ namespace ScaffoldR
                 Thumbnail = new Media() 
                 {
                     Sources = files
-                        .Where(f => f.IsMedia && f.Section == "thumbnail")
+                        .Where(f => f.InputType == InputType.Media && f.Section == "thumbnail")
                         .Select(mapFileToSource)
                         .ToArray()
                 },
                 Sections = new Dictionary<string, Section>()
             };
 
-            var metaDataPath = files.Where(f => f.Section == "metadata").Select(f => f.Path).FirstOrDefault();
+            var metadataFile = files.Where(f => f.Section == "metadata").FirstOrDefault();
 
-            if (metaDataPath != null) 
+            if (metadataFile != null) 
             {
-                page.Metadata = await ParseMetadataAsync<TMetadata>(source, metaDataPath);
+                page.Metadata = await ParseMetadataAsync<TMetadata>(source, metadataFile);
             }
 
             var ignoreList = new string[] { "metadata", "thumbnail", "thumbs", "icon" };
@@ -73,11 +55,11 @@ namespace ScaffoldR
                 Section section;
 
                 // section metadata
-                var metadataPath = sectionGroup.Where(f => metadataContentTypes.ContainsKey(f.Extension)).Select(f => f.Path).FirstOrDefault();
+                var sectionMetadataFile = sectionGroup.Where(f => f.InputType == InputType.Metadata).FirstOrDefault();
 
-                if (metadataPath != null)
+                if (sectionMetadataFile != null)
                 {
-                    section = await ParseMetadataAsync<Section>(source, metadataPath);
+                    section = await ParseMetadataAsync<Section>(source, sectionMetadataFile);
                 }
                 else
                 {
@@ -85,8 +67,7 @@ namespace ScaffoldR
                 }
 
                 // section html or markdown content
-                var contentExtenions = new string[] { "html", "htm", "md" };
-                var contentPath = sectionGroup.Where(f => contentExtenions.Contains(f.Extension)).Select(f => f.Path).FirstOrDefault();
+                var contentPath = sectionGroup.Where(f => f.InputType == InputType.Content).Select(f => f.Path).FirstOrDefault();
 
                 if (contentPath != null)
                 {
@@ -95,7 +76,7 @@ namespace ScaffoldR
 
                 // section media
                 var media = sectionGroup
-                        .Where(s => s.IsMedia)
+                        .Where(s => s.InputType == InputType.Media)
                         .GroupBy(s => s.Order)
                         .Select(g => new Media()
                         {
@@ -215,15 +196,14 @@ namespace ScaffoldR
         {
             var datasources = new Dictionary<string, object>();
             var files = await source.GetFilesAsync(path); 
-            var csv = files
-                .Where(f => GetExtension(f) == "csv")
+            var data = files
+                .Select(p => new InputFile(p))
+                .Where(f => f.InputType == InputType.Data)
                 .ToList();
 
-            foreach (var file in csv) 
+            foreach (var file in data) 
             {
-                var key = GetFileNameWithoutExtension(file);
-
-                datasources.Add(key, await ParseCsvAsync(source, key, file));
+                datasources.Add(file.Section, await ParseDataAsync(source, file));
             }
 
             return datasources;
@@ -243,46 +223,24 @@ namespace ScaffoldR
             }
         }
 
-        private async Task<TMetadata> ParseMetadataAsync<TMetadata>(IFileInput source, string path)
+        private async Task<TMetadata> ParseMetadataAsync<TMetadata>(IFileInput source, InputFile file)
         {
-            var extension = GetExtension(path);
-            var name = Path.GetFileNameWithoutExtension(path);
-
-            using (var inputStream = await source.OpenStreamAsync(path))
+            using (var inputStream = await source.OpenStreamAsync(file.Path))
             {
                 return container
-                        .ResolveDeserializer(name, metadataContentTypes[extension])
+                        .ResolveDeserializer(file.Section, file.ContentType)
                         .Deserialize<TMetadata>(inputStream);
             }
         }
 
-        private async Task<object[]> ParseCsvAsync(IFileInput source, string key, string path)
+        private async Task<object[]> ParseDataAsync(IFileInput source, InputFile file)
         {
-            using (var inputStream = await source.OpenStreamAsync(path))
+            using (var inputStream = await source.OpenStreamAsync(file.Path))
             {
                 return container
-                        .ResolveDataReader(key, Constants.ContentType.Csv)
+                        .ResolveDataReader(file.Section, file.ContentType)
                         .ReadData(inputStream);
             }
-        }
-
-        private string GetFileName(string path)
-        {
-            return Path.GetFileName(path)
-                .ToLower();
-        }
-
-        private string GetFileNameWithoutExtension(string path)
-        {
-            return Path.GetFileNameWithoutExtension(path)
-                .ToLower();
-        }
-
-        private string GetExtension(string path)
-        {
-            return Path.GetExtension(path)
-                .ToLower()
-                .TrimStart('.');
         }
 
         private string RewriteImagePath(string pageSlug, string imagePath)
