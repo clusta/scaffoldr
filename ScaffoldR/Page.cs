@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,11 +9,22 @@ namespace ScaffoldR
 {
     public class Page<TMetadata>
     {
+        [JsonProperty("kind")]
         public string Kind { get; set; }
+
+        [JsonProperty("slug")]
         public string Slug { get; set; }
+
+        [JsonProperty("metadata")]
         public TMetadata Metadata { get; set; }
+
+        [JsonProperty("sections")]
         public IDictionary<string, Section> Sections { get; set; }
+
+        [JsonProperty("data")]
         public IDictionary<string, object> Data { get; set; }
+
+        [JsonProperty("thumbnail")]
         public Media Thumbnail { get; set; }
 
         public string GetAllContent()

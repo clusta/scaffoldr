@@ -21,6 +21,7 @@ namespace ScaffoldR
         public IList<Media> Media { get; set; }
 
         [JsonExtensionData]
+        [JsonProperty("extensions")]
         public IDictionary<string, object> Extensions { get; set; }
 
         public Section()

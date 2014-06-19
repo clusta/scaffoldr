@@ -28,6 +28,7 @@ namespace ScaffoldR
         public Action Action { get; set; }
 
         [JsonExtensionData]
+        [JsonProperty("extensions")]
         public IDictionary<string, object> Extensions { get; set; }
 
         public string GetSourceUri(params string[] prefered)
